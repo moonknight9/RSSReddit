@@ -8,6 +8,12 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+
+
 
 
 class Feeds : AppCompatActivity() {
@@ -34,8 +40,17 @@ class Feeds : AppCompatActivity() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        JSONReader(feedView).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=5",
-                "https://www.reddit.com/r/heroesofthestorm/.json?limit=5")
+        val reader : JSONReader
+        if (JSONFactory.reader != null) {
+            reader = JSONFactory.getJSONReader()!!
+        } else {
+            reader = JSONReader(feedView, this)
+            JSONFactory.reader = reader
+        }
+        reader.execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
+        //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
+        )
+        scheduleAlarm(reader)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -55,5 +70,20 @@ class Feeds : AppCompatActivity() {
         } else {
             super.onOptionsItemSelected(item)
         }
+    }
+
+    // Setup a recurring alarm every half hour
+    fun scheduleAlarm(reader : JSONReader) {
+        // Construct an intent that will execute the AlarmReceiver
+        val intent = Intent(applicationContext, MyAlarmReceiver::class.java)
+        // Create a PendingIntent to be triggered when the alarm goes off
+        val pIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        // Setup periodic alarm every every half hour from this point onwards
+        val firstMillis = System.currentTimeMillis() // alarm is set right away
+        val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        // First parameter is the type: ELAPSED_REALTIME, ELAPSED_REALTIME_WAKEUP, RTC_WAKEUP
+        // Interval can be INTERVAL_FIFTEEN_MINUTES, INTERVAL_HALF_HOUR, INTERVAL_HOUR, INTERVAL_DAY
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, AlarmManager.INTERVAL_HOUR, pIntent)
     }
 }

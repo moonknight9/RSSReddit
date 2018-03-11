@@ -39,7 +39,19 @@ class FeedRecycleAdapter(private val feed: ArrayList<SubReddit>) : RecyclerView.
         textView.text = """${thread.title}
             ${thread.ups} | ${thread.numComments}""".trimMargin()
         val defaultColor = (textView.background as ColorDrawable).color
-        textView.setOnTouchListener { _, event ->
+
+        textView.setOnClickListener { _ ->
+            textView.setBackgroundColor(Color.DKGRAY)
+            viewHolder.parent.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(thread.url)))
+            textView.setBackgroundColor(defaultColor)
+        }
+
+        textView.setOnLongClickListener { _ ->
+            viewHolder.parent.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(thread.permalink)))
+            true
+        }
+
+        /*textView.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     textView.setBackgroundColor(Color.DKGRAY)
@@ -49,7 +61,8 @@ class FeedRecycleAdapter(private val feed: ArrayList<SubReddit>) : RecyclerView.
                     textView.setBackgroundColor(defaultColor)
             }
             true
-        }
+        }*/
+
         //Add Layout
         val layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
         layoutParams.addRule(RelativeLayout.BELOW, id - 1)
