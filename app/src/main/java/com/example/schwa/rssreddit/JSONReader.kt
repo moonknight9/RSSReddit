@@ -23,6 +23,7 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
     var seenSubRedditList: ArrayList<SubReddit>? = null
 
     override fun doInBackground(vararg params: String?): ArrayList<JSONObject> {
+        Logger.getGlobal().log(Level.INFO, "<AsyncTask> Pulling new information from Reddit")
         val jsonArr = ArrayList<JSONObject>()
         var subName = ""
         params.map {

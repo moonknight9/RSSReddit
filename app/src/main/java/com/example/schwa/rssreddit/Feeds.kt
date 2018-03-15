@@ -50,7 +50,7 @@ class Feeds : AppCompatActivity() {
         reader.execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
         //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
-        scheduleAlarm(reader)
+        scheduleAlarm()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -73,7 +73,7 @@ class Feeds : AppCompatActivity() {
     }
 
     // Setup a recurring alarm every half hour
-    fun scheduleAlarm(reader : JSONReader) {
+    fun scheduleAlarm() {
         // Construct an intent that will execute the AlarmReceiver
         val intent = Intent(applicationContext, MyAlarmReceiver::class.java)
         // Create a PendingIntent to be triggered when the alarm goes off
@@ -84,6 +84,6 @@ class Feeds : AppCompatActivity() {
         val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // First parameter is the type: ELAPSED_REALTIME, ELAPSED_REALTIME_WAKEUP, RTC_WAKEUP
         // Interval can be INTERVAL_FIFTEEN_MINUTES, INTERVAL_HALF_HOUR, INTERVAL_HOUR, INTERVAL_DAY
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, AlarmManager.INTERVAL_HOUR, pIntent)
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, AlarmManager.INTERVAL_HALF_HOUR, pIntent)
     }
 }
