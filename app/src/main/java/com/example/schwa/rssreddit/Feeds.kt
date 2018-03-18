@@ -1,6 +1,11 @@
 package com.example.schwa.rssreddit
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -8,15 +13,11 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-
-
 
 
 class Feeds : AppCompatActivity() {
+
+    var swipeContainer: SwipeRefreshLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,14 +34,25 @@ class Feeds : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }*/
+        swipeContainer = findViewById(R.id.swipeRecycler)
+        // Configure the refreshing colors
+        swipeContainer!!.setColorSchemeColors(android.R.color.holo_blue_bright,
+                        android.R.color.holo_green_light,
+                        android.R.color.holo_orange_light,
+                        android.R.color.holo_red_light
+        )
 
-        //Feed
-        //val listView = findViewById<View>(R.id.feed_list) as ListView
-        //JSONReader(this, listView).execute()
+        swipeContainer!!.setOnRefreshListener {
+            loadRList()
+        }
+        loadRList()
+    }
+
+    private fun loadRList() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        val reader : JSONReader
+        val reader: JSONReader
         if (JSONFactory.reader != null) {
             reader = JSONFactory.getJSONReader()!!
         } else {
@@ -48,7 +60,7 @@ class Feeds : AppCompatActivity() {
             JSONFactory.reader = reader
         }
         reader.execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
-        //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
+                //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
         scheduleAlarm()
     }
@@ -73,11 +85,11 @@ class Feeds : AppCompatActivity() {
     }
 
     // Setup a recurring alarm every half hour
-    fun scheduleAlarm() {
+    private fun scheduleAlarm() {
         // Construct an intent that will execute the AlarmReceiver
         val intent = Intent(applicationContext, MyAlarmReceiver::class.java)
         // Create a PendingIntent to be triggered when the alarm goes off
-        val pIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
+        val pIntent = PendingIntent.getService(this, MyAlarmReceiver.REQUEST_CODE,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT)
         // Setup periodic alarm every every half hour from this point onwards
         val firstMillis = System.currentTimeMillis() // alarm is set right away

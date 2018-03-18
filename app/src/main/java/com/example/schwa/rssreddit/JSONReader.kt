@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.AsyncTask
 import android.os.Build
 import android.support.v4.app.NotificationCompat
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.RecyclerView
 import android.widget.Toast
 import org.json.JSONException
@@ -24,6 +25,9 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
 
     override fun doInBackground(vararg params: String?): ArrayList<JSONObject> {
         Logger.getGlobal().log(Level.INFO, "<AsyncTask> Pulling new information from Reddit")
+        if (listView.isShown) {
+            (listView.parent as SwipeRefreshLayout).setRefreshing(true)
+        }
         val jsonArr = ArrayList<JSONObject>()
         var subName = ""
         params.map {
@@ -58,6 +62,7 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
         }
         if (listView.isShown) {
             listView.adapter = FeedRecycleAdapter(seenSubRedditList!!)
+            (listView.parent as SwipeRefreshLayout).setRefreshing(false)
         } else {
             //new List containing the updates
             val newList = seenSubRedditList
@@ -68,7 +73,7 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
                 if (seenSubRedditList == null) {
                     seenSubRedditList = ArrayList<SubReddit>()
                 }
-                (0 until (newList.size)).forEach {
+                (0 until (seenSubRedditList!!.size)).forEach {
                     val newSubReddit = newList[it]
                     val oldSubReddit = seenSubRedditList!![it]
                     newSubReddit.post
@@ -78,7 +83,6 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
                 }
             }
         }
-        //sendNotification(seenSubRedditList!![0].post[0])
     }
 
     private fun sendNotification(post: RedditPost) {
@@ -86,7 +90,7 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
         val mBuilder = NotificationCompat.Builder(appContext, "CHANNELID")
                 .setSmallIcon(R.drawable.stat_sys_warning)
                 .setContentTitle(post.title)
-                .setContentText(post.text)
+                .setContentText("""Upvotes: ${post.ups}\n ${post.text}""")
                 .setStyle(NotificationCompat.BigTextStyle().bigText(post.text))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
