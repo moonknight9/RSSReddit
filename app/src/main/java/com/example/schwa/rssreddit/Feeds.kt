@@ -37,9 +37,9 @@ class Feeds : AppCompatActivity() {
         swipeContainer = findViewById(R.id.swipeRecycler)
         // Configure the refreshing colors
         swipeContainer!!.setColorSchemeColors(android.R.color.holo_blue_bright,
-                        android.R.color.holo_green_light,
-                        android.R.color.holo_orange_light,
-                        android.R.color.holo_red_light
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light
         )
 
         swipeContainer!!.setOnRefreshListener {
