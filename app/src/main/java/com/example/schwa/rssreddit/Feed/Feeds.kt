@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit
+package com.example.schwa.rssreddit.Feed
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -13,6 +13,10 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.example.schwa.rssreddit.JSONFactory
+import com.example.schwa.rssreddit.JSONReader
+import com.example.schwa.rssreddit.MyAlarmReceiver
+import com.example.schwa.rssreddit.R
 
 
 class Feeds : AppCompatActivity() {
@@ -89,8 +93,9 @@ class Feeds : AppCompatActivity() {
         // Construct an intent that will execute the AlarmReceiver
         val intent = Intent(applicationContext, MyAlarmReceiver::class.java)
         // Create a PendingIntent to be triggered when the alarm goes off
-        val pIntent = PendingIntent.getService(this, MyAlarmReceiver.REQUEST_CODE,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        //val pIntent = PendingIntent.getService(this, MyAlarmReceiver.REQUEST_CODE,
+        //        intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val pIntent = PendingIntent.getBroadcast(applicationContext, MyAlarmReceiver.REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         // Setup periodic alarm every every half hour from this point onwards
         val firstMillis = System.currentTimeMillis() // alarm is set right away
         val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager

@@ -10,8 +10,8 @@ class MyAlarmReceiver : BroadcastReceiver() {
     // Triggered by the Alarm periodically (starts the service to run task)
     override fun onReceive(context: Context, intent: Intent) {
         //val i = Intent(context, NotificationService::class.java)
-        val i = Intent("NotificationUpdate")
-        NotificationService.enqueueWork(context, i)
+        //val i = Intent("NotificationUpdate")
+        NotificationService.enqueueWork(context, intent)
     }
 
     companion object {

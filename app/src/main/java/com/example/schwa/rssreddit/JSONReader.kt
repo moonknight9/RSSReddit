@@ -3,13 +3,19 @@ package com.example.schwa.rssreddit
 import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.AsyncTask
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.RecyclerView
 import android.widget.Toast
+import com.example.schwa.rssreddit.Feed.FeedRecycleAdapter
+import com.example.schwa.rssreddit.Feed.Feeds
+import com.example.schwa.rssreddit.Feed.RedditPost
+import com.example.schwa.rssreddit.Feed.SubReddit
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URL
@@ -25,22 +31,22 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
 
     override fun doInBackground(vararg params: String?): ArrayList<JSONObject> {
         Logger.getGlobal().log(Level.INFO, "<AsyncTask> Pulling new information from Reddit")
-        if (listView.isShown) {
+        /*if (listView.isShown) {
             (listView.parent as SwipeRefreshLayout).setRefreshing(true)
-        }
+        }*/
         val jsonArr = ArrayList<JSONObject>()
         var subName = ""
         params.map {
             subName = it.orEmpty()
             URL(it).readText()
         }.forEach {
-                    try {
-                        jsonArr.add(JSONObject(it))
-                    } catch (e: JSONException) {
-                        Toast.makeText(listView.context, """SubReddit $subName not found. Please check your connection.""", Toast.LENGTH_LONG).show()
-                        Logger.getGlobal().log(Level.WARNING, e.message)
-                    }
-                }
+            try {
+                jsonArr.add(JSONObject(it))
+            } catch (e: JSONException) {
+                Toast.makeText(listView.context, """SubReddit $subName not found. Please check your connection.""", Toast.LENGTH_LONG).show()
+                Logger.getGlobal().log(Level.WARNING, e.message)
+            }
+        }
         return jsonArr
     }
 
@@ -78,7 +84,7 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
                     val oldSubReddit = seenSubRedditList!![it]
                     newSubReddit.post
                             .filterNot { oldSubReddit.post.contains(it) }
-                            .filter { it.ups >= 800 }
+                            .filter { it.ups >= 1000 }
                             .forEach { sendNotification(it) }
                 }
             }
@@ -87,12 +93,20 @@ class JSONReader(list: RecyclerView, context: Context) : AsyncTask<String, Void,
 
     private fun sendNotification(post: RedditPost) {
         Logger.getGlobal().log(Level.INFO, "Notification send")
+
+        val intent = Intent(appContext, Feeds::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0)
+
         val mBuilder = NotificationCompat.Builder(appContext, "CHANNELID")
-                .setSmallIcon(R.drawable.stat_sys_warning)
+                .setSmallIcon(R.drawable.ic_menu_more)
                 .setContentTitle(post.title)
-                .setContentText("""Upvotes: ${post.ups}\n ${post.text}""")
+                .setContentText("""Upvotes: ${post.ups}
+                     ${post.text}""".trimMargin())
                 .setStyle(NotificationCompat.BigTextStyle().bigText(post.text))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+        //.setContentIntent(pendingIntent)
         val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit
+package com.example.schwa.rssreddit.Feed
 
 class RedditPost {
 

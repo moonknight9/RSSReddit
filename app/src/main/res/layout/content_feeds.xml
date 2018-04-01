@@ -8,7 +8,7 @@
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.example.schwa.rssreddit.Feeds">
+        tools:context="com.example.schwa.rssreddit.Feed.Feeds">
 
     <TextView
             android:id="@+id/scroll_text_content"

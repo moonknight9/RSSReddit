@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit
+package com.example.schwa.rssreddit.Feed
 
 import android.content.Context
 import android.content.Intent
@@ -7,10 +7,10 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
+import com.example.schwa.rssreddit.R
 import java.util.*
 
 
