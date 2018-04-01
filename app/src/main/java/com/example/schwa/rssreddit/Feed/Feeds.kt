@@ -14,7 +14,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.example.schwa.rssreddit.JSONFactory
-import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
 import com.example.schwa.rssreddit.R
 
@@ -22,6 +21,17 @@ import com.example.schwa.rssreddit.R
 class Feeds : AppCompatActivity() {
 
     var swipeContainer: SwipeRefreshLayout? = null
+
+    companion object {
+        var instance: Feeds? = null
+        fun getContext(): Context {
+            return instance!!.applicationContext
+        }
+    }
+
+    init {
+        instance = this
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,14 +66,7 @@ class Feeds : AppCompatActivity() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        val reader: JSONReader
-        if (JSONFactory.reader != null) {
-            reader = JSONFactory.getJSONReader()!!
-        } else {
-            reader = JSONReader(feedView, this)
-            JSONFactory.reader = reader
-        }
-        reader.execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
+        JSONFactory.getJSONReader(applicationContext, feedView).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
                 //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
         scheduleAlarm()
@@ -88,7 +91,6 @@ class Feeds : AppCompatActivity() {
         }
     }
 
-    // Setup a recurring alarm every half hour
     private fun scheduleAlarm() {
         // Construct an intent that will execute the AlarmReceiver
         val intent = Intent(applicationContext, MyAlarmReceiver::class.java)
@@ -97,10 +99,15 @@ class Feeds : AppCompatActivity() {
         //        intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val pIntent = PendingIntent.getBroadcast(applicationContext, MyAlarmReceiver.REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         // Setup periodic alarm every every half hour from this point onwards
+        //TODO load this from settings
+        val interval = AlarmManager.INTERVAL_HALF_HOUR
+
         val firstMillis = System.currentTimeMillis() // alarm is set right away
         val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // First parameter is the type: ELAPSED_REALTIME, ELAPSED_REALTIME_WAKEUP, RTC_WAKEUP
         // Interval can be INTERVAL_FIFTEEN_MINUTES, INTERVAL_HALF_HOUR, INTERVAL_HOUR, INTERVAL_DAY
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, AlarmManager.INTERVAL_HALF_HOUR, pIntent)
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, interval, pIntent)
     }
+
+
 }
