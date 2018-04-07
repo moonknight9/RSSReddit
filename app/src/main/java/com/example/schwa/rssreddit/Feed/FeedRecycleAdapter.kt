@@ -51,21 +51,24 @@ class FeedRecycleAdapter(private val feed: ArrayList<SubReddit>) : RecyclerView.
             true
         }
 
-        /*textView.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    textView.setBackgroundColor(Color.DKGRAY)
-                    viewHolder.parent.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(thread.url)))
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_MOVE ->
-                    textView.setBackgroundColor(defaultColor)
-            }
-            true
-        }*/
-
         //Add Layout
         val layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
         layoutParams.addRule(RelativeLayout.BELOW, id - 1)
+
+        /*if (thread.thumbnail.equals("self")) {
+            val threadText = TextView(viewHolder.parent)
+            threadText.text = thread.text
+            viewHolder.feedEntry.addView(threadText, layoutParams)
+        } else {
+            try {
+                val imgView = ImageView(viewHolder.parent)
+                Picasso.with(viewHolder.parent).load("http://i.imgur.com/DvpvklR.png").into(imgView)
+                viewHolder.feedEntry.addView(imgView, layoutParams)
+            } catch (e: Exception) {
+                Logger.getGlobal().log(Level.WARNING, """Thumnail ${thread.thumbnail} could not be loaded""")
+            }
+        }*/
+
         //Add View to Layout
         viewHolder.feedEntry.addView(textView, layoutParams)
     }

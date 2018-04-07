@@ -10,6 +10,7 @@ class RedditPost {
     var numComments: Long = 0
     var url: String? = null
     var permalink: String? = null
+    var thumbnail: String? = null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

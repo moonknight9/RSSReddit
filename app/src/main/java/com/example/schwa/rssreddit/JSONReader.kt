@@ -6,12 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.widget.Toast
 import com.example.schwa.rssreddit.Feed.*
-import org.json.JSONException
 import org.json.JSONObject
 import java.net.URL
 import java.util.logging.Level
@@ -29,18 +29,22 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
         }
         val jsonArr = ArrayList<JSONObject>()
         var subName = ""
-        params.map {
-            subName = it.orEmpty()
-            URL(it).readText()
-        }.forEach {
-            try {
+        try {
+            params.map {
+                subName = it.orEmpty()
+                URL(it).readText()
+            }.forEach {
+
                 jsonArr.add(JSONObject(it))
-            } catch (e: JSONException) {
+
+            }
+        } catch (e: Exception) {
+            Feeds.instance!!.runOnUiThread {
                 Toast.makeText(context,
                         """SubReddit $subName not found. Please check your connection.""",
                         Toast.LENGTH_LONG).show()
-                Logger.getGlobal().log(Level.WARNING, e.message)
             }
+            Logger.getGlobal().log(Level.WARNING, e.message)
         }
         return jsonArr
     }
@@ -51,14 +55,23 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
         val seenSubRedditList = getResultList(resultList)
 
         if (container != null && container.list.isShown) {
+            Logger.getGlobal().log(Level.INFO, "On screen pull")
             //save new seen list
             container.seenSubRedditList = seenSubRedditList
+            JSONFactory.container = container
             container.list.adapter = FeedRecycleAdapter(seenSubRedditList)
+
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.cancelAll()
+
             Feeds.instance!!.runOnUiThread { Feeds.instance!!.swipeContainer!!.setRefreshing(false) }
         } else {
             if (container?.seenSubRedditList != null && container.seenSubRedditList!!.isEmpty()) {
+                Logger.getGlobal().log(Level.INFO, "Offscreen pull")
                 container.seenSubRedditList = seenSubRedditList
+                JSONFactory.container = container
             } else {
+                Logger.getGlobal().log(Level.INFO, "Container List size before gen " + container?.seenSubRedditList?.size)
                 generateNotifications(seenSubRedditList)
             }
         }
@@ -83,9 +96,10 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
         (0 until (seenSubRedditList.size)).forEach {
             val newSubReddit = seenSubRedditList[it]
             val oldSubReddit = if (container?.seenSubRedditList != null) container.seenSubRedditList!![it] else SubReddit(ArrayList())
+            Logger.getGlobal().log(Level.INFO, "Oldsubsize when Noti is generated" + oldSubReddit.post.size)
             newSubReddit.post
                     .filterNot { oldSubReddit.post.contains(it) }
-                    .filter { it.ups >= 1000 }
+                    .filter { it.ups >= 1500 }
                     .forEach { sendNotification(it) }
         }
     }
@@ -93,7 +107,8 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
     private fun sendNotification(post: RedditPost) {
         Logger.getGlobal().log(Level.INFO, "Notification send")
 
-        val intent = Intent(context, Feeds::class.java)
+        //val intent = Intent(context, Feeds::class.java)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(post.permalink))
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
@@ -105,7 +120,7 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
                 .setStyle(NotificationCompat.BigTextStyle().bigText(post.text))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
-        //.setContentIntent(pendingIntent)
+                .setContentIntent(pendingIntent)
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -126,6 +141,7 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
         post.url = jsonObj.getString("url")
         post.html = jsonObj.getString("selftext_html")
         post.permalink = "https://www.reddit.com" + jsonObj.getString("permalink")
+        post.thumbnail = jsonObj.getString("thumbnail")
         return post
     }
 }

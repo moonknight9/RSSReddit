@@ -7,18 +7,13 @@ import com.example.schwa.rssreddit.Feed.ViewContainer
 class JSONFactory {
 
     companion object {
-        private var reader: JSONReader? = null
+        var container: ViewContainer? = null
         fun getJSONReader(context: Context, feedView: RecyclerView? = null): JSONReader {
-            val newReader = JSONReader(getViewContainer(feedView), context)
-            if (feedView != null) {
-                reader = newReader
-            }
-            return newReader
+            return JSONReader(getViewContainer(feedView), context)
         }
 
-        private fun getViewContainer(feedView: RecyclerView? = null): ViewContainer? {
-            return if (feedView != null) ViewContainer(feedView)
-            else (if (reader != null) (reader as JSONReader).container else null)
+        private fun getViewContainer(feedView: RecyclerView?): ViewContainer? {
+            return if (feedView != null) ViewContainer(feedView) else container
         }
     }
 }
