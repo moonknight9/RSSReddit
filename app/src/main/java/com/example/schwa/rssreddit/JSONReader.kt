@@ -18,7 +18,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 
-class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTask<String, Void, ArrayList<JSONObject>>() {
+class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : AsyncTask<String, Void, ArrayList<JSONObject>>() {
 
     val container = viewContainer
 
@@ -33,11 +33,7 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
             params.map {
                 subName = it.orEmpty()
                 URL(it).readText()
-            }.forEach {
-
-                jsonArr.add(JSONObject(it))
-
-            }
+            }.forEach { jsonArr.add(JSONObject(it)) }
         } catch (e: Exception) {
             Feeds.instance!!.runOnUiThread {
                 Toast.makeText(context,
@@ -54,24 +50,29 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
 
         val seenSubRedditList = getResultList(resultList)
 
+        val subBox = SubReddit.box()
         if (container != null && container.list.isShown) {
-            Logger.getGlobal().log(Level.INFO, "On screen pull")
-            //save new seen list
-            container.seenSubRedditList = seenSubRedditList
-            JSONFactory.container = container
-            container.list.adapter = FeedRecycleAdapter(seenSubRedditList)
+            //clean already seen Reddits and save new
+            Feeds.instance!!.boxStore.boxFor(RedditPost::class.java).removeAll()
+            subBox.removeAll()
+            subBox.put(seenSubRedditList)
 
+            //refresh layout with loaded list
+            val list = ArrayList<RedditPost>()
+            seenSubRedditList[0].posts.forEach { it -> list.add(it) }
+            container.list.adapter = FeedRecycleAdapter(list)
+
+            //cancel all notifications when app is loaded
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
             notificationManager.cancelAll()
-
             Feeds.instance!!.runOnUiThread { Feeds.instance!!.swipeContainer!!.setRefreshing(false) }
         } else {
-            if (container?.seenSubRedditList != null && container.seenSubRedditList!!.isEmpty()) {
-                Logger.getGlobal().log(Level.INFO, "Offscreen pull")
-                container.seenSubRedditList = seenSubRedditList
-                JSONFactory.container = container
+            val subList = subBox.all
+            if (subList.isEmpty()) {
+                Feeds.instance!!.boxStore.boxFor(RedditPost::class.java).removeAll()
+                subBox.removeAll()
+                SubReddit.box().put(seenSubRedditList)
             } else {
-                Logger.getGlobal().log(Level.INFO, "Container List size before gen " + container?.seenSubRedditList?.size)
                 generateNotifications(seenSubRedditList)
             }
         }
@@ -82,12 +83,16 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
         for (result in resultList) {
             val postList = ArrayList<RedditPost>()
             val posts = result.getJSONObject("data").getJSONArray("children")
+            var subName = ""
             (0..(posts.length() - 1))
                     .map { posts.getJSONObject(it).getJSONObject("data") }
                     //No daily question threads
                     .filterNot { "AutoModerator" == it.getString("author") }
-                    .mapTo(postList) { getRedditFromJSON(it) }
-            seenSubRedditList.add(SubReddit(postList))
+                    .mapTo(postList) {
+                        subName = it.getString("subreddit")
+                        getRedditFromJSON(it)
+                    }
+            seenSubRedditList.add(SubReddit(postList, subName))
         }
         return seenSubRedditList
     }
@@ -95,19 +100,16 @@ class JSONReader(viewContainer: ViewContainer?, val context: Context) : AsyncTas
     private fun generateNotifications(seenSubRedditList: ArrayList<SubReddit>) {
         (0 until (seenSubRedditList.size)).forEach {
             val newSubReddit = seenSubRedditList[it]
-            val oldSubReddit = if (container?.seenSubRedditList != null) container.seenSubRedditList!![it] else SubReddit(ArrayList())
-            Logger.getGlobal().log(Level.INFO, "Oldsubsize when Noti is generated" + oldSubReddit.post.size)
-            newSubReddit.post
-                    .filterNot { oldSubReddit.post.contains(it) }
+            val oldSubReddit = SubReddit.box().query().equal(SubReddit_.name, newSubReddit.name).build().findFirst()
+
+            newSubReddit.posts
+                    .filterNot { oldSubReddit?.posts?.contains(it) ?: false }
                     .filter { it.ups >= 1500 }
                     .forEach { sendNotification(it) }
         }
     }
 
     private fun sendNotification(post: RedditPost) {
-        Logger.getGlobal().log(Level.INFO, "Notification send")
-
-        //val intent = Intent(context, Feeds::class.java)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(post.permalink))
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)

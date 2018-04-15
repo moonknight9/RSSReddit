@@ -13,16 +13,19 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.example.schwa.rssreddit.JSONFactory
+import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
 import com.example.schwa.rssreddit.R
+import io.objectbox.BoxStore
 
 
 class Feeds : AppCompatActivity() {
 
+    lateinit var boxStore: BoxStore
     var swipeContainer: SwipeRefreshLayout? = null
 
     companion object {
+        val DEBUG = true
         var instance: Feeds? = null
         fun getContext(): Context {
             return instance!!.applicationContext
@@ -35,6 +38,13 @@ class Feeds : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // initialize Objectbox db whatever
+        boxStore = MyObjectBox.builder().androidContext(this).build()
+        if (DEBUG) {
+            //val started = AndroidObjectBrowser(boxStore).start(this)
+            //Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
+        }
 
         setContentView(R.layout.activity_feeds)
 
@@ -66,7 +76,7 @@ class Feeds : AppCompatActivity() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        JSONFactory.getJSONReader(applicationContext, feedView).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
+        JSONReader(applicationContext, ViewContainer(feedView)).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
                 //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
         scheduleAlarm()

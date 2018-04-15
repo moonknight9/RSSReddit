@@ -15,6 +15,6 @@ class NotificationService : JobIntentService() {
     }
 
     override fun onHandleWork(intent: Intent) {
-        JSONFactory.getJSONReader(applicationContext).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10")
+        JSONReader(applicationContext).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10")
     }
 }

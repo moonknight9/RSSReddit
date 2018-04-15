@@ -1,12 +1,26 @@
 package com.example.schwa.rssreddit.Feed
 
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Transient
+import io.objectbox.relation.ToOne
+
+@Entity
 class RedditPost {
+
+    @Id
+    var dbId: Long = 0
+    lateinit var subreddit: ToOne<SubReddit>
 
     var id: String? = null
     var title: String? = null
+    @Transient
     var text: String? = null
+    @Transient
     var html: String? = null
+    @Transient
     var ups: Long = 0
+    @Transient
     var numComments: Long = 0
     var url: String? = null
     var permalink: String? = null

@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt' // if using Kotlin
+apply plugin: 'io.objectbox'
 
 android {
     compileSdkVersion 27
@@ -30,7 +32,9 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile "io.objectbox:objectbox-android:$objectboxVersion"
 }
+
 repositories {
     mavenCentral()
 }
