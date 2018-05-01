@@ -25,7 +25,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
     override fun doInBackground(vararg params: String?): ArrayList<JSONObject> {
         Logger.getGlobal().log(Level.INFO, "<AsyncTask> Pulling new information from Reddit")
         if (container != null && container.list.isShown) {
-            Feeds.instance!!.runOnUiThread { Feeds.instance!!.swipeContainer!!.setRefreshing(true) }
+            Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = true }
         }
         val jsonArr = ArrayList<JSONObject>()
         var subName = ""
@@ -35,7 +35,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
                 URL(it).readText()
             }.forEach { jsonArr.add(JSONObject(it)) }
         } catch (e: Exception) {
-            Feeds.instance!!.runOnUiThread {
+            Feeds.getInstance().runOnUiThread {
                 Toast.makeText(context,
                         """SubReddit $subName not found. Please check your connection.""",
                         Toast.LENGTH_LONG).show()
@@ -53,9 +53,9 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         val subBox = SubReddit.box()
         if (container != null && container.list.isShown) {
             //clean already seen Reddits and save new
-            Feeds.instance!!.boxStore.boxFor(RedditPost::class.java).removeAll()
-            subBox.removeAll()
-            subBox.put(seenSubRedditList)
+            RedditPost.box()?.removeAll()
+            subBox?.removeAll()
+            subBox?.put(seenSubRedditList)
 
             //refresh layout with loaded list
             val list = ArrayList<RedditPost>()
@@ -65,13 +65,13 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             //cancel all notifications when app is loaded
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
             notificationManager.cancelAll()
-            Feeds.instance!!.runOnUiThread { Feeds.instance!!.swipeContainer!!.setRefreshing(false) }
+            Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = false }
         } else {
-            val subList = subBox.all
-            if (subList.isEmpty()) {
-                Feeds.instance!!.boxStore.boxFor(RedditPost::class.java).removeAll()
+            val subList = subBox?.all
+            if (subList != null && subList.isEmpty()) {
+                RedditPost.box()!!.removeAll()
                 subBox.removeAll()
-                SubReddit.box().put(seenSubRedditList)
+                subBox.put(seenSubRedditList)
             } else {
                 generateNotifications(seenSubRedditList)
             }
@@ -100,7 +100,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
     private fun generateNotifications(seenSubRedditList: ArrayList<SubReddit>) {
         (0 until (seenSubRedditList.size)).forEach {
             val newSubReddit = seenSubRedditList[it]
-            val oldSubReddit = SubReddit.box().query().equal(SubReddit_.name, newSubReddit.name).build().findFirst()
+            val oldSubReddit = SubReddit.box()?.query()?.equal(SubReddit_.name, newSubReddit.name)?.build()?.findFirst()
 
             newSubReddit.posts
                     .filterNot { oldSubReddit?.posts?.contains(it) ?: false }

@@ -21,25 +21,27 @@ import io.objectbox.BoxStore
 
 class Feeds : AppCompatActivity() {
 
-    lateinit var boxStore: BoxStore
     var swipeContainer: SwipeRefreshLayout? = null
+    var boxStore: BoxStore? = null
 
     companion object {
         val DEBUG = true
-        var instance: Feeds? = null
-        fun getContext(): Context {
-            return instance!!.applicationContext
+        private var thisInstance: Feeds? = null
+        fun getInstance(): Feeds {
+            if (thisInstance == null) {
+                thisInstance = Feeds()
+            }
+            return thisInstance!!
         }
     }
 
     init {
-        instance = this
+        thisInstance = this
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // initialize Objectbox db whatever
         boxStore = MyObjectBox.builder().androidContext(this).build()
         if (DEBUG) {
             //val started = AndroidObjectBrowser(boxStore).start(this)

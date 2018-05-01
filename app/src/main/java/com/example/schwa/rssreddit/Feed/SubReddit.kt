@@ -1,5 +1,6 @@
 package com.example.schwa.rssreddit.Feed
 
+import com.example.schwa.rssreddit.DBHelper
 import io.objectbox.Box
 import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
@@ -25,8 +26,8 @@ class SubReddit {
     }
 
     companion object {
-        fun box(): Box<SubReddit> {
-            return Feeds.instance!!.boxStore.boxFor(SubReddit::class.java)
+        fun box(): Box<SubReddit>? {
+            return DBHelper.box()?.boxFor(SubReddit::class.java)
         }
     }
 

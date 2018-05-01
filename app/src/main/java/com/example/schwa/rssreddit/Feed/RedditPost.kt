@@ -1,5 +1,7 @@
 package com.example.schwa.rssreddit.Feed
 
+import com.example.schwa.rssreddit.DBHelper
+import io.objectbox.Box
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Transient
@@ -41,5 +43,9 @@ class RedditPost {
         return id?.hashCode() ?: 0
     }
 
-
+    companion object {
+        fun box(): Box<RedditPost>? {
+            return DBHelper.box()?.boxFor(RedditPost::class.java)
+        }
+    }
 }
