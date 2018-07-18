@@ -39,6 +39,21 @@ class FeedRecycleAdapter(private val feed: ArrayList<RedditPost>) : RecyclerView
     private fun addThreadView(viewHolder: ViewHolder, it: IndexedValue<RedditPost>) {
         //Create TextView
         val thread = it.value
+
+        val imgView = viewHolder.feedEntry.findViewById<View>(R.id.redditThumbnail) as ImageView
+        if (thread.thumbnail.equals("self")) {
+            Picasso.with(viewHolder.itemView.context)
+                    .load(R.drawable.placeholder)
+                    //.resize(metrics.widthPixels, 0)
+                    .resize(140, 140)
+                    .onlyScaleDown()
+                    .centerCrop()
+                    .into(imgView)
+            imgView.visibility = View.VISIBLE
+        } else {
+            setThumbnail(viewHolder, thread, imgView)
+        }
+
         val textView = viewHolder.feedEntry.findViewById<View>(R.id.redditPostTitle) as TextView
         textView.text = """${thread.title}
             ${thread.ups} | ${thread.numComments}""".trimMargin()
@@ -46,27 +61,24 @@ class FeedRecycleAdapter(private val feed: ArrayList<RedditPost>) : RecyclerView
         textView.setOnClickListener { _ ->
             viewHolder.parent.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(thread.permalink)))
         }
+    }
 
-        val imgView = viewHolder.feedEntry.findViewById<View>(R.id.redditThumbnail) as ImageView
-        if (thread.thumbnail.equals("self")) {
-            imgView.visibility = View.GONE
-            Logger.getGlobal().log(Level.INFO, "self: " + thread.title)
-        } else {
-            try {
-                val metrics = DisplayMetrics()
-                val wm = viewHolder.parent.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                wm.defaultDisplay.getMetrics(metrics)
-                Picasso.with(viewHolder.itemView.context)
-                        .load(thread.thumbnail)
-                        .resize(metrics.widthPixels, 0)
-                        .into(imgView)
-                imgView.visibility = View.VISIBLE
-                imgView.setOnClickListener { _ ->
-                    viewHolder.parent.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(thread.url)))
-                }
-            } catch (e: Exception) {
-                Logger.getGlobal().log(Level.WARNING, """Thumnail ${thread.thumbnail} could not be loaded""")
+    private fun setThumbnail(viewHolder: ViewHolder, thread: RedditPost, imgView: ImageView) {
+        try {
+            val metrics = DisplayMetrics()
+            val wm = viewHolder.parent.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            wm.defaultDisplay.getMetrics(metrics)
+            Picasso.with(viewHolder.itemView.context)
+                    .load(thread.thumbnail)
+                    //.resize(metrics.widthPixels, 0)
+                    .resize(140, 140)
+                    .into(imgView)
+            imgView.visibility = View.VISIBLE
+            imgView.setOnClickListener { _ ->
+                viewHolder.parent.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(thread.url)))
             }
+        } catch (e: Exception) {
+            Logger.getGlobal().log(Level.WARNING, """Thumnail ${thread.thumbnail} could not be loaded""")
         }
     }
 

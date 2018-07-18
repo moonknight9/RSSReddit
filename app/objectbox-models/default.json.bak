@@ -1,0 +1,77 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:7658662722719873016",
+      "lastPropertyId": "7:4135973530080828804",
+      "name": "RedditPost",
+      "properties": [
+        {
+          "id": "1:6381245778496073133",
+          "name": "dbId"
+        },
+        {
+          "id": "2:1638549448589683592",
+          "name": "id"
+        },
+        {
+          "id": "3:269096613869852691",
+          "name": "title"
+        },
+        {
+          "id": "4:3373265297216145966",
+          "name": "url"
+        },
+        {
+          "id": "5:3935749261764954902",
+          "name": "permalink"
+        },
+        {
+          "id": "6:3778679068335015801",
+          "name": "thumbnail"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:7461935498696532888",
+      "lastPropertyId": "2:6165743375297473484",
+      "name": "SubReddit",
+      "properties": [
+        {
+          "id": "1:2077466116314541505",
+          "name": "id"
+        },
+        {
+          "id": "2:6165743375297473484",
+          "name": "name"
+        }
+      ],
+      "relations": [
+        {
+          "id": "2:7661245968075271515",
+          "name": "posts"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "2:7461935498696532888",
+  "lastIndexId": "1:8513326652469669240",
+  "lastRelationId": "2:7661245968075271515",
+  "lastSequenceId": "0:0",
+  "modelVersion": 4,
+  "modelVersionParserMinimum": 4,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [
+    8513326652469669240
+  ],
+  "retiredPropertyUids": [
+    4135973530080828804
+  ],
+  "retiredRelationUids": [
+    1883540966313793888
+  ],
+  "version": 1
+}

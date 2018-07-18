@@ -43,6 +43,7 @@ class Feeds : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         boxStore = MyObjectBox.builder().androidContext(this).build()
+
         if (DEBUG) {
             //val started = AndroidObjectBrowser(boxStore).start(this)
             //Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")

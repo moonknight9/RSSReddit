@@ -59,7 +59,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
 
             //refresh layout with loaded list
             val list = ArrayList<RedditPost>()
-            seenSubRedditList[0].posts.forEach { it -> list.add(it) }
+            seenSubRedditList.forEach { it -> list.addAll(it.posts) }
             container.list.adapter = FeedRecycleAdapter(list)
 
             //cancel all notifications when app is loaded
