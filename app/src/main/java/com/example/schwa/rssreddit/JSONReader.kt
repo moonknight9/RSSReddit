@@ -53,9 +53,9 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         val subBox = SubReddit.box()
         if (container != null && container.list.isShown) {
             //clean already seen Reddits and save new
-            RedditPost.box()?.removeAll()
-            subBox?.removeAll()
-            subBox?.put(seenSubRedditList)
+            RedditPost.box().removeAll()
+            subBox.removeAll()
+            subBox.put(seenSubRedditList)
 
             //refresh layout with loaded list
             val list = ArrayList<RedditPost>()
@@ -67,9 +67,9 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             notificationManager.cancelAll()
             Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = false }
         } else {
-            val subList = subBox?.all
+            val subList = subBox.all
             if (subList != null && subList.isEmpty()) {
-                RedditPost.box()!!.removeAll()
+                RedditPost.box().removeAll()
                 subBox.removeAll()
                 subBox.put(seenSubRedditList)
             } else {
@@ -100,7 +100,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
     private fun generateNotifications(seenSubRedditList: ArrayList<SubReddit>) {
         (0 until (seenSubRedditList.size)).forEach {
             val newSubReddit = seenSubRedditList[it]
-            val oldSubReddit = SubReddit.box()?.query()?.equal(SubReddit_.name, newSubReddit.name)?.build()?.findFirst()
+            val oldSubReddit = SubReddit.box().query().equal(SubReddit_.name, newSubReddit.name).build().findFirst()
 
             newSubReddit.posts
                     .filterNot { oldSubReddit?.posts?.contains(it) ?: false }

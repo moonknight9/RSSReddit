@@ -44,8 +44,8 @@ class RedditPost {
     }
 
     companion object {
-        fun box(): Box<RedditPost>? {
-            return DBHelper.box()?.boxFor(RedditPost::class.java)
+        fun box(): Box<RedditPost> {
+            return DBHelper.boxStore.boxFor(RedditPost::class.java)
         }
     }
 }

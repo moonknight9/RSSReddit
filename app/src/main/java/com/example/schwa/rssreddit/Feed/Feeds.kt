@@ -13,16 +13,18 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.example.schwa.rssreddit.DBHelper
 import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
 import com.example.schwa.rssreddit.R
-import io.objectbox.BoxStore
+import io.objectbox.android.AndroidObjectBrowser
+import java.util.logging.Level
+import java.util.logging.Logger
 
 
 class Feeds : AppCompatActivity() {
 
     var swipeContainer: SwipeRefreshLayout? = null
-    var boxStore: BoxStore? = null
 
     companion object {
         val DEBUG = true
@@ -42,12 +44,12 @@ class Feeds : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        boxStore = MyObjectBox.builder().androidContext(this).build()
+        DBHelper.build(this)
 
-        if (DEBUG) {
-            //val started = AndroidObjectBrowser(boxStore).start(this)
-            //Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
-        }
+        //if (DEBUG) {
+        val started = AndroidObjectBrowser(DBHelper.boxStore).start(this)
+        Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
+        //}
 
         setContentView(R.layout.activity_feeds)
 
