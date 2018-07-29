@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:7658662722719873016",
-      "lastPropertyId": "7:4135973530080828804",
+      "lastPropertyId": "8:2524747200415317485",
       "name": "RedditPost",
       "properties": [
         {
@@ -31,6 +31,11 @@
         {
           "id": "6:3778679068335015801",
           "name": "thumbnail"
+        },
+        {
+          "id": "8:2524747200415317485",
+          "indexId": "2:5102268848488901796",
+          "name": "subredditId"
         }
       ],
       "relations": []
@@ -49,16 +54,11 @@
           "name": "name"
         }
       ],
-      "relations": [
-        {
-          "id": "2:7661245968075271515",
-          "name": "posts"
-        }
-      ]
+      "relations": []
     }
   ],
   "lastEntityId": "2:7461935498696532888",
-  "lastIndexId": "1:8513326652469669240",
+  "lastIndexId": "2:5102268848488901796",
   "lastRelationId": "2:7661245968075271515",
   "lastSequenceId": "0:0",
   "modelVersion": 4,
@@ -71,7 +71,8 @@
     4135973530080828804
   ],
   "retiredRelationUids": [
-    1883540966313793888
+    1883540966313793888,
+    7661245968075271515
   ],
   "version": 1
 }

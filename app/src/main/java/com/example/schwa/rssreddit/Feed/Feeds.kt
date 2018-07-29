@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -17,7 +18,9 @@ import com.example.schwa.rssreddit.DBHelper
 import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
 import com.example.schwa.rssreddit.R
+import com.example.schwa.rssreddit.Settings.SettingsActivity
 import io.objectbox.android.AndroidObjectBrowser
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -84,7 +87,9 @@ class Feeds : AppCompatActivity() {
         JSONReader(applicationContext, ViewContainer(feedView)).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
                 //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
-        scheduleAlarm()
+        if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
+            scheduleAlarm()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -100,6 +105,8 @@ class Feeds : AppCompatActivity() {
         val id = item.itemId
 
         return if (id == R.id.action_settings) {
+            val intent = Intent(applicationContext, SettingsActivity::class.java)
+            startActivity(intent)
             true
         } else {
             super.onOptionsItemSelected(item)
@@ -114,8 +121,10 @@ class Feeds : AppCompatActivity() {
         //        intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val pIntent = PendingIntent.getBroadcast(applicationContext, MyAlarmReceiver.REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         // Setup periodic alarm every every half hour from this point onwards
-        //TODO load this from settings
-        val interval = AlarmManager.INTERVAL_HALF_HOUR
+        val interval: Long = TimeUnit.MINUTES.toMillis(
+                PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        .getString("sync_frequency", "30").toLong())
+        Logger.getGlobal().log(Level.INFO, "Refresh interval: $interval")
 
         val firstMillis = System.currentTimeMillis() // alarm is set right away
         val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager

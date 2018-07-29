@@ -13,6 +13,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {
@@ -27,15 +28,17 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:27.+'
-    compile 'com.android.support:design:27.+'
-    testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    compile 'com.squareup.picasso:picasso:2.5.2'
     //compile "io.objectbox:objectbox-android:$objectboxVersion"
     //debugCompile "io.objectbox:objectbox-android-objectbrowser:$objectboxVersion"
     compile "io.objectbox:objectbox-android-objectbrowser:$objectboxVersion"
     //releaseCompile "io.objectbox:objectbox-android:$objectboxVersion"
+    compile 'com.android.support:appcompat-v7:27.+'
+    compile 'com.android.support:design:27.+'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.android.support:support-v4:27.+'
+    compile 'com.android.support:support-vector-drawable:27.+'
+    testCompile 'junit:junit:4.12'
 }
 
 apply plugin: 'io.objectbox'
