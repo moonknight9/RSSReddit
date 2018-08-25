@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import com.example.schwa.rssreddit.DBHelper
 import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
@@ -28,9 +29,9 @@ import java.util.logging.Logger
 class Feeds : AppCompatActivity() {
 
     var swipeContainer: SwipeRefreshLayout? = null
+    var DEBUG = true
 
     companion object {
-        val DEBUG = true
         private var thisInstance: Feeds? = null
         fun getInstance(): Feeds {
             if (thisInstance == null) {
@@ -49,10 +50,12 @@ class Feeds : AppCompatActivity() {
 
         DBHelper.build(this)
 
-        //if (DEBUG) {
-        val started = AndroidObjectBrowser(DBHelper.boxStore).start(this)
-        Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
-        //}
+        DEBUG = PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("debug_switch", true)
+
+        if (DEBUG) {
+            val started = AndroidObjectBrowser(DBHelper.boxStore).start(this)
+            Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
+        }
 
         setContentView(R.layout.activity_feeds)
 
@@ -89,6 +92,8 @@ class Feeds : AppCompatActivity() {
         )
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
             scheduleAlarm()
+        } else if (DEBUG) {
+            Toast.makeText(applicationContext, "Notification disabled", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -125,6 +130,11 @@ class Feeds : AppCompatActivity() {
                 PreferenceManager.getDefaultSharedPreferences(applicationContext)
                         .getString("sync_frequency", "30").toLong())
         Logger.getGlobal().log(Level.INFO, "Refresh interval: $interval")
+        if (DEBUG) {
+            Toast.makeText(applicationContext,
+                    "Interval set to ${TimeUnit.MILLISECONDS.toMinutes(interval)}",
+                    Toast.LENGTH_LONG).show()
+        }
 
         val firstMillis = System.currentTimeMillis() // alarm is set right away
         val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
