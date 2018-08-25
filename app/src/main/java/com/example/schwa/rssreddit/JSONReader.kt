@@ -12,6 +12,7 @@ import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.widget.Toast
 import com.example.schwa.rssreddit.Feed.*
+import io.objectbox.Box
 import org.json.JSONObject
 import java.net.URL
 import java.util.logging.Level
@@ -48,13 +49,13 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
     override fun onPostExecute(resultList: ArrayList<JSONObject>) {
         super.onPostExecute(resultList)
 
-        val seenSubRedditList = getResultList(resultList)
-
         val subBox = SubReddit.box()
+        val seenSubRedditList = getResultList(resultList, subBox)
+
         if (container != null && container.list.isShown) {
-            //clean already seen Reddits and save new
+            // TODO old Posts won't get deleted even if they are removed from
             RedditPost.box().removeAll()
-            subBox.removeAll()
+            // update DB
             subBox.put(seenSubRedditList)
 
             //refresh layout with loaded list
@@ -69,8 +70,8 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         } else {
             val subList = subBox.all
             if (subList != null && subList.isEmpty()) {
+                // TODO old Posts won't get deleted even if they are removed from
                 RedditPost.box().removeAll()
-                subBox.removeAll()
                 subBox.put(seenSubRedditList)
             } else {
                 generateNotifications(seenSubRedditList)
@@ -78,7 +79,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         }
     }
 
-    private fun getResultList(resultList: ArrayList<JSONObject>): ArrayList<SubReddit> {
+    private fun getResultList(resultList: ArrayList<JSONObject>, subBox: Box<SubReddit>): ArrayList<SubReddit> {
         val seenSubRedditList = ArrayList<SubReddit>()
         for (result in resultList) {
             val postList = ArrayList<RedditPost>()
@@ -90,9 +91,14 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
                     .filterNot { "AutoModerator" == it.getString("author") }
                     .mapTo(postList) {
                         subName = it.getString("subreddit")
-                        getRedditFromJSON(it)
+                        getPostJSON(it)
                     }
-            seenSubRedditList.add(SubReddit(postList, subName))
+            // find DB object to be able to update it instead of creating a new SubReddit
+            val subReddit = subBox.query().equal(SubReddit_.name, subName).build().findFirst()
+            subReddit?.posts?.clear()
+            subReddit?.posts?.addAll(postList)
+            // fallback to creating a new SubReddit if something goes wrong, "should" not happen
+            seenSubRedditList.add(subReddit ?: SubReddit(postList, subName))
         }
         return seenSubRedditList
     }
@@ -104,7 +110,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
 
             newSubReddit.posts
                     .filterNot { oldSubReddit?.posts?.contains(it) ?: false }
-                    .filter { it.ups >= 1500 }
+                    .filter { it.ups >= newSubReddit.reqUpVotes }
                     .forEach { sendNotification(it) }
         }
     }
@@ -133,7 +139,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         notificationManager.notify(post.id!!.hashCode(), mBuilder.build())
     }
 
-    private fun getRedditFromJSON(jsonObj: JSONObject): RedditPost {
+    private fun getPostJSON(jsonObj: JSONObject): RedditPost {
         val post = RedditPost()
         post.id = jsonObj.getString("id")
         post.title = jsonObj.getString("title")
