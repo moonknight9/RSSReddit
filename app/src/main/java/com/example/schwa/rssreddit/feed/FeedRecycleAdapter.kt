@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit.Feed
+package com.example.schwa.rssreddit.feed
 
 import android.content.Context
 import android.content.Intent
@@ -12,7 +12,6 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.example.schwa.rssreddit.R
 import com.squareup.picasso.Picasso
 import java.util.*
 import java.util.logging.Level

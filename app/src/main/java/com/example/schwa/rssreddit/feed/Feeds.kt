@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit.Feed
+package com.example.schwa.rssreddit.feed
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -6,20 +6,25 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
+import android.text.TextUtils
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
+import android.widget.Switch
 import android.widget.Toast
 import com.example.schwa.rssreddit.DBHelper
 import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
-import com.example.schwa.rssreddit.R
-import com.example.schwa.rssreddit.Settings.SettingsActivity
+import com.example.schwa.rssreddit.settings.SettingsActivity
 import io.objectbox.android.AndroidObjectBrowser
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
@@ -64,11 +69,8 @@ class Feeds : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         // Plus btn
-        /*val fab = findViewById<View>(R.id.fab) as FloatingActionButton
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }*/
+        addSubButtonInit()
+
         swipeContainer = findViewById(R.id.swipeRecycler)
         // Configure the refreshing colors
         swipeContainer!!.setColorSchemeColors(android.R.color.holo_blue_bright,
@@ -83,12 +85,46 @@ class Feeds : AppCompatActivity() {
         loadRList()
     }
 
+    private fun addSubButtonInit() {
+        val fab = findViewById<View>(R.id.add_sub_fab) as FloatingActionButton
+        val inflater = applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val formElementsView = inflater.inflate(R.layout.create_sub, null, false)
+        val subName = formElementsView.findViewById(R.id.sub_name) as EditText
+        val subPosts = formElementsView.findViewById(R.id.sub_post_num) as EditText
+        val subVotes = formElementsView.findViewById(R.id.sub_votes_num) as EditText
+        val noti = formElementsView.findViewById(R.id.sub_notification_switch) as Switch
+        val builder = AlertDialog.Builder(this)
+                .setView(formElementsView)
+                .setTitle("Add Student")
+                .setPositiveButton("Add") { dialog, which ->
+                    if (TextUtils.isEmpty(subName.text) || TextUtils.isEmpty(subVotes.text) || TextUtils.isEmpty(subPosts.text)) {
+                        //TODO add check if subName is valid / already there etc
+                        Toast.makeText(applicationContext, "Subreddit incomplete - not saved", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val sub = SubReddit(subName.text.toString(),
+                                Integer.parseInt(subPosts.text.toString()),
+                                Integer.parseInt(subVotes.text.toString()),
+                                noti.isEnabled)
+                        SubReddit.box().put(sub)
+                        Toast.makeText(applicationContext, "${subName.text} added", Toast.LENGTH_SHORT).show()
+                        loadRList()
+                    }
+                }
+                .setNegativeButton("Discard") { dialog, which ->
+                    Toast.makeText(applicationContext, "Changes not saved", Toast.LENGTH_SHORT).show()
+                }
+                .create()
+        fab.setOnClickListener { builder.show() }
+    }
+
     private fun loadRList() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        JSONReader(applicationContext, ViewContainer(feedView)).execute("https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
-                //        ,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
+        JSONReader(applicationContext, ViewContainer(feedView)).execute(
+                *SubReddit.box().all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray()
+                //"https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
+                //,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
             scheduleAlarm()
@@ -112,6 +148,11 @@ class Feeds : AppCompatActivity() {
         return if (id == R.id.action_settings) {
             val intent = Intent(applicationContext, SettingsActivity::class.java)
             startActivity(intent)
+            true
+        } else if (id == R.id.action_delete_subs) {
+            SubReddit.box().removeAll()
+            Toast.makeText(applicationContext, "All subs deleted", Toast.LENGTH_LONG).show()
+            loadRList()
             true
         } else {
             super.onOptionsItemSelected(item)

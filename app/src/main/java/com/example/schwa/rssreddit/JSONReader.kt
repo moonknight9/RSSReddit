@@ -11,7 +11,7 @@ import android.os.AsyncTask
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.widget.Toast
-import com.example.schwa.rssreddit.Feed.*
+import com.example.schwa.rssreddit.feed.*
 import io.objectbox.Box
 import org.json.JSONObject
 import java.net.URL
@@ -48,6 +48,10 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
 
     override fun onPostExecute(resultList: ArrayList<JSONObject>) {
         super.onPostExecute(resultList)
+
+        if (!DBHelper.isInitialized()) {
+            return
+        }
 
         val subBox = SubReddit.box()
         val seenSubRedditList = getResultList(resultList, subBox)

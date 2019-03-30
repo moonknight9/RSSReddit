@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sub_name"
+            android:inputType="text"
+            android:hint="NintendoSwitch"/>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sub_post_num"
+            android:inputType="numberDecimal"
+            android:hint="10"/>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sub_votes_num"
+            android:inputType="numberDecimal"
+            android:hint="1500"/>
+    <Switch
+            android:text="Notifications"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sub_notification_switch" android:checked="true" android:textSize="18sp"/>
+    <!--<LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <Button
+                android:text="Add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/sub_add"/>
+        <Button
+                android:text="Discard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/sub_discard"/>
+    </LinearLayout>-->
+</LinearLayout>

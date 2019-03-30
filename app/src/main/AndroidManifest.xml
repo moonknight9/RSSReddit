@@ -23,7 +23,7 @@
                 android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <activity
-                android:name=".Feed.Feeds"
+                android:name=".feed.Feeds"
                 android:configChanges="keyboardHidden|orientation"
                 android:label="@string/app_name"
                 android:theme="@style/AppTheme.NoActionBar">
@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".Settings.SettingsActivity"
+                android:name=".settings.SettingsActivity"
                 android:label="@string/title_activity_settings">
         </activity>
     </application>

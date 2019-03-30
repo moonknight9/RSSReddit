@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit.Feed
+package com.example.schwa.rssreddit.feed
 
 import com.example.schwa.rssreddit.DBHelper
 import io.objectbox.Box
@@ -14,6 +14,7 @@ class SubReddit {
     var name: String
     var maxPostNum: Int = 10
     var reqUpVotes: Int = 1500
+    var notiEnabled: Boolean = true
     @Backlink
     lateinit var posts: ToMany<RedditPost>
 
@@ -25,6 +26,13 @@ class SubReddit {
     constructor(post: ArrayList<RedditPost>, subName: String) {
         name = subName
         posts.addAll(post)
+    }
+
+    constructor(name: String, maxPostNum: Int, reqUpVotes: Int, notiEnabled: Boolean) {
+        this.name = name
+        this.maxPostNum = maxPostNum
+        this.reqUpVotes = reqUpVotes
+        this.notiEnabled = notiEnabled
     }
 
     companion object {

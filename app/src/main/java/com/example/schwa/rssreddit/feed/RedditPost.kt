@@ -1,4 +1,4 @@
-package com.example.schwa.rssreddit.Feed
+package com.example.schwa.rssreddit.feed
 
 import com.example.schwa.rssreddit.DBHelper
 import io.objectbox.Box

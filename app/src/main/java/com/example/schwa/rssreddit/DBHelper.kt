@@ -1,7 +1,6 @@
 package com.example.schwa.rssreddit
 
 import android.content.Context
-import com.example.schwa.rssreddit.Feed.MyObjectBox
 import io.objectbox.BoxStore
 
 object DBHelper {
@@ -19,5 +18,9 @@ object DBHelper {
 //        boxStore = MyObjectBox.builder().androidContext(context.applicationContext)
 //                .directory(directory)
 //                .build()
+    }
+
+    fun isInitialized(): Boolean {
+        return ::boxStore.isInitialized
     }
 }
