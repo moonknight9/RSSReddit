@@ -16,6 +16,7 @@ import com.squareup.picasso.Picasso
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
+import com.example.schwa.rssreddit.R
 
 
 class FeedRecycleAdapter(private val feed: ArrayList<RedditPost>) : RecyclerView.Adapter<FeedRecycleAdapter.ViewHolder>() {

@@ -7,7 +7,7 @@
           android:orderInCategory="100"
           app:showAsAction="never"/>
     <item android:id="@+id/action_delete_subs"
-          android:title="Delete all subs"
+          android:title="@string/delete_all_subs"
           android:orderInCategory="100"
           app:showAsAction="never"/>
 </menu>

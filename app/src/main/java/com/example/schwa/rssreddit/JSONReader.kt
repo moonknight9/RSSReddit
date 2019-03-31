@@ -1,6 +1,5 @@
 package com.example.schwa.rssreddit
 
-import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -125,7 +124,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
         val mBuilder = NotificationCompat.Builder(context, "CHANNELID")
-                .setSmallIcon(R.drawable.ic_menu_more)
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(post.title)
                 .setContentText("""Upvotes: ${post.ups}
                      ${post.text}""".trimMargin())

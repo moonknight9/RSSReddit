@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.preference.*
 import android.text.TextUtils
 import android.view.MenuItem
+import com.example.schwa.rssreddit.R
 
 /**
  * A [PreferenceActivity] that presents a set of application settings. On

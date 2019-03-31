@@ -4,11 +4,11 @@
               android:layout_height="match_parent">
 
     <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:inputType="textPersonName"
-            android:text="SubName"
+            android:text="@string/subname"
             android:ems="10"
             android:id="@+id/editText" android:layout_weight="1" tools:text="SUUUB"
-            android:contentDescription="SubRedditName" android:textAlignment="viewStart"/>
+            android:contentDescription="@string/subredditname" android:textAlignment="viewStart"/>
 </LinearLayout>

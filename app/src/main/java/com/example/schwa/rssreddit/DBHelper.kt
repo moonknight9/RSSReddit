@@ -1,6 +1,7 @@
 package com.example.schwa.rssreddit
 
 import android.content.Context
+import com.example.schwa.rssreddit.feed.MyObjectBox
 import io.objectbox.BoxStore
 
 object DBHelper {

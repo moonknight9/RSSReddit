@@ -3,10 +3,12 @@ package com.example.schwa.rssreddit.feed
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.design.widget.FloatingActionButton
+import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -24,6 +26,7 @@ import android.widget.Toast
 import com.example.schwa.rssreddit.DBHelper
 import com.example.schwa.rssreddit.JSONReader
 import com.example.schwa.rssreddit.MyAlarmReceiver
+import com.example.schwa.rssreddit.R
 import com.example.schwa.rssreddit.settings.SettingsActivity
 import io.objectbox.android.AndroidObjectBrowser
 import java.util.concurrent.TimeUnit
@@ -61,7 +64,6 @@ class Feeds : AppCompatActivity() {
             val started = AndroidObjectBrowser(DBHelper.boxStore).start(this)
             Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
         }
-
         setContentView(R.layout.activity_feeds)
 
         //Toolbar
@@ -73,10 +75,11 @@ class Feeds : AppCompatActivity() {
 
         swipeContainer = findViewById(R.id.swipeRecycler)
         // Configure the refreshing colors
-        swipeContainer!!.setColorSchemeColors(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light
+        swipeContainer!!.setColorSchemeColors(
+                ContextCompat.getColor(applicationContext, android.R.color.holo_blue_bright),
+                ContextCompat.getColor(applicationContext, android.R.color.holo_green_light),
+                ContextCompat.getColor(applicationContext, android.R.color.holo_orange_light),
+                ContextCompat.getColor(applicationContext, android.R.color.holo_red_light)
         )
 
         swipeContainer!!.setOnRefreshListener {
@@ -96,7 +99,7 @@ class Feeds : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
                 .setView(formElementsView)
                 .setTitle("Add Student")
-                .setPositiveButton("Add") { dialog, which ->
+                .setPositiveButton("Add") { _: DialogInterface, _:Int ->
                     if (TextUtils.isEmpty(subName.text) || TextUtils.isEmpty(subVotes.text) || TextUtils.isEmpty(subPosts.text)) {
                         //TODO add check if subName is valid / already there etc
                         Toast.makeText(applicationContext, "Subreddit incomplete - not saved", Toast.LENGTH_SHORT).show()
@@ -110,7 +113,7 @@ class Feeds : AppCompatActivity() {
                         loadRList()
                     }
                 }
-                .setNegativeButton("Discard") { dialog, which ->
+                .setNegativeButton("Discard") { _: DialogInterface, _:Int ->
                     Toast.makeText(applicationContext, "Changes not saved", Toast.LENGTH_SHORT).show()
                 }
                 .create()
