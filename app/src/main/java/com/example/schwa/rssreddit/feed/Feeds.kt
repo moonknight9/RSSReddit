@@ -56,7 +56,9 @@ class Feeds : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        DBHelper.build(this)
+        if (!DBHelper.isInitialized()) {
+            DBHelper.build(this)
+        }
 
         DEBUG = PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("debug_switch", true)
 

@@ -4,12 +4,18 @@ import android.content.Context
 import android.content.Intent
 import android.support.v4.app.JobIntentService
 import com.example.schwa.rssreddit.feed.SubReddit
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class NotificationService : JobIntentService() {
     companion object {
-        private const val JOB_ID = 20180311
+        private const val JOB_ID = 20190402
 
         fun enqueueWork(context: Context, work: Intent) {
+            if (!DBHelper.isInitialized()) {
+                Logger.getGlobal().log(Level.INFO, "Reinitialized BoxStore for NotificationService")
+                DBHelper.build(context)
+            }
             enqueueWork(context, NotificationService::class.java, JOB_ID, work)
         }
 

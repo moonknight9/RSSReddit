@@ -2,14 +2,14 @@
 
 buildscript {
     ext.kotlin_version = '1.3.21'
-    ext.objectboxVersion = '1.4.3'
+    ext.objectboxVersion = '2.3.4'
     repositories {
-        jcenter()
-        google()
         maven {
             url "https://plugins.gradle.org/m2/"
             name 'Gradle'
         }
+        jcenter()
+        google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.2'
@@ -32,13 +32,13 @@ buildScan {
 allprojects {
     repositories {
         jcenter()
-        mavenLocal()
         mavenCentral()
-        google()
+        mavenLocal()
         maven {
             url 'https://maven.google.com/'
             name 'Google'
         }
+        google()
     }
 }
 
