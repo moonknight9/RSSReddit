@@ -110,7 +110,7 @@ class Feeds : AppCompatActivity() {
                                 Integer.parseInt(subPosts.text.toString()),
                                 Integer.parseInt(subVotes.text.toString()),
                                 noti.isEnabled)
-                        SubReddit.box().put(sub)
+                        SubReddit.box(applicationContext).put(sub)
                         Toast.makeText(applicationContext, "${subName.text} added", Toast.LENGTH_SHORT).show()
                         loadRList()
                     }
@@ -127,7 +127,7 @@ class Feeds : AppCompatActivity() {
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
         JSONReader(applicationContext, ViewContainer(feedView)).execute(
-                *SubReddit.box().all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray()
+                *SubReddit.box(applicationContext).all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray()
                 //"https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
                 //,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
         )
@@ -155,7 +155,7 @@ class Feeds : AppCompatActivity() {
             startActivity(intent)
             true
         } else if (id == R.id.action_delete_subs) {
-            SubReddit.box().removeAll()
+            SubReddit.box(applicationContext).removeAll()
             Toast.makeText(applicationContext, "All subs deleted", Toast.LENGTH_LONG).show()
             loadRList()
             true

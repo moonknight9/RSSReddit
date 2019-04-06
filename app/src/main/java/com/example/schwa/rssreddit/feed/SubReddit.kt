@@ -1,5 +1,6 @@
 package com.example.schwa.rssreddit.feed
 
+import android.content.Context
 import com.example.schwa.rssreddit.DBHelper
 import io.objectbox.Box
 import io.objectbox.annotation.Backlink
@@ -36,8 +37,8 @@ class SubReddit {
     }
 
     companion object {
-        fun box(): Box<SubReddit> {
-            return DBHelper.boxStore.boxFor(SubReddit::class.java)
+        fun box(context: Context): Box<SubReddit> {
+            return DBHelper.getBoxStore(context).boxFor(SubReddit::class.java)
         }
     }
 

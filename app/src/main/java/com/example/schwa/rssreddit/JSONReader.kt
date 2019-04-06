@@ -48,16 +48,12 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
     override fun onPostExecute(resultList: ArrayList<JSONObject>) {
         super.onPostExecute(resultList)
 
-        if (!DBHelper.isInitialized()) {
-            return
-        }
-
-        val subBox = SubReddit.box()
+        val subBox = SubReddit.box(context)
         val seenSubRedditList = getResultList(resultList, subBox)
 
         if (container != null && container.list.isShown) {
             // TODO old Posts won't get deleted even if they are removed from
-            RedditPost.box().removeAll()
+            RedditPost.box(context).removeAll()
             // update DB
             subBox.put(seenSubRedditList)
 
@@ -74,7 +70,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             val subList = subBox.all
             if (subList != null && subList.isEmpty()) {
                 // TODO old Posts won't get deleted even if they are removed from
-                RedditPost.box().removeAll()
+                RedditPost.box(context).removeAll()
                 subBox.put(seenSubRedditList)
             } else {
                 generateNotifications(seenSubRedditList)
@@ -109,7 +105,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
     private fun generateNotifications(seenSubRedditList: ArrayList<SubReddit>) {
         (0 until (seenSubRedditList.size)).forEach {
             val newSubReddit = seenSubRedditList[it]
-            val oldSubReddit = SubReddit.box().query().equal(SubReddit_.name, newSubReddit.name).build().findFirst()
+            val oldSubReddit = SubReddit.box(context).query().equal(SubReddit_.name, newSubReddit.name).build().findFirst()
 
             newSubReddit.posts
                     .filterNot { oldSubReddit?.posts?.contains(it) ?: false }

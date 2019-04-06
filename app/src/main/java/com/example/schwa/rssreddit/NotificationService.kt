@@ -12,16 +12,12 @@ class NotificationService : JobIntentService() {
         private const val JOB_ID = 20190402
 
         fun enqueueWork(context: Context, work: Intent) {
-            if (!DBHelper.isInitialized()) {
-                Logger.getGlobal().log(Level.INFO, "Reinitialized BoxStore for NotificationService")
-                DBHelper.build(context)
-            }
             enqueueWork(context, NotificationService::class.java, JOB_ID, work)
         }
 
     }
 
     override fun onHandleWork(intent: Intent) {
-        JSONReader(applicationContext).execute(*SubReddit.box().all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray())
+        JSONReader(applicationContext).execute(*SubReddit.box(applicationContext).all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray())
     }
 }
