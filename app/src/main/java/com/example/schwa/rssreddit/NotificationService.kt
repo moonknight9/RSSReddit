@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.support.v4.app.JobIntentService
 import com.example.schwa.rssreddit.feed.SubReddit
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class NotificationService : JobIntentService() {
     companion object {

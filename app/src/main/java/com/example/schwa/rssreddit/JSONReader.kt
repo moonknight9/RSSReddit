@@ -58,9 +58,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             subBox.put(seenSubRedditList)
 
             //refresh layout with loaded list
-            val list = ArrayList<RedditPost>()
-            seenSubRedditList.forEach { list.addAll(it.posts) }
-            container.list.adapter = FeedRecycleAdapter(list)
+            container.list.adapter = FeedRecycleAdapter(seenSubRedditList.map { SubRedditGroupHolder(it) })
 
             //cancel all notifications when app is loaded
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
@@ -94,6 +92,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
                     }
             // find DB object to be able to update it instead of creating a new SubReddit
             val subReddit = subBox.query().equal(SubReddit_.name, subName).build().findFirst()
+            //TODO Fix post lateinit issue
             subReddit?.posts?.clear()
             subReddit?.posts?.addAll(postList)
             // fallback to creating a new SubReddit if something goes wrong, "should" not happen
