@@ -92,16 +92,35 @@ class Feeds : AppCompatActivity() {
 
     private fun addSubButtonInit() {
         val fab = findViewById<View>(R.id.add_sub_fab) as FloatingActionButton
+        fab.setOnClickListener { getSubRedditCreationForm().show() }
+    }
+
+    fun getSubRedditCreationForm(subRedditName: String? = null): AlertDialog {
         val inflater = applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val formElementsView = inflater.inflate(R.layout.create_sub, null, false)
+
         val subName = formElementsView.findViewById(R.id.sub_name) as EditText
         val subPosts = formElementsView.findViewById(R.id.sub_post_num) as EditText
         val subVotes = formElementsView.findViewById(R.id.sub_votes_num) as EditText
         val noti = formElementsView.findViewById(R.id.sub_notification_switch) as Switch
-        val builder = AlertDialog.Builder(this)
+
+        //Prefill Dialog if we got called with a name
+        var subRedditID : Long? = null
+        if (!subRedditName.isNullOrBlank()) {
+            val subReddit = SubReddit.box(applicationContext).query().equal(SubReddit_.name, subRedditName).build().findFirst()
+            if (subReddit != null) {
+                subRedditID = subReddit.id
+                subName.setText(subReddit.name)
+                subPosts.setText(subReddit.maxPostNum.toString())
+                subVotes.setText(subReddit.reqUpVotes.toString())
+                noti.isChecked = subReddit.notiEnabled
+            }
+        }
+
+        return AlertDialog.Builder(this)
                 .setView(formElementsView)
                 .setTitle("Add Student")
-                .setPositiveButton("Add") { _: DialogInterface, _:Int ->
+                .setPositiveButton("Add") { _: DialogInterface, _: Int ->
                     if (TextUtils.isEmpty(subName.text) || TextUtils.isEmpty(subVotes.text) || TextUtils.isEmpty(subPosts.text)) {
                         //TODO add check if subName is valid / already there etc
                         Toast.makeText(applicationContext, "Subreddit incomplete - not saved", Toast.LENGTH_SHORT).show()
@@ -109,17 +128,19 @@ class Feeds : AppCompatActivity() {
                         val sub = SubReddit(subName.text.toString(),
                                 Integer.parseInt(subPosts.text.toString()),
                                 Integer.parseInt(subVotes.text.toString()),
-                                noti.isEnabled)
+                                noti.isChecked)
+                        if (subRedditID != null) {
+                            sub.id = subRedditID
+                        }
                         SubReddit.box(applicationContext).put(sub)
                         Toast.makeText(applicationContext, "${subName.text} added", Toast.LENGTH_SHORT).show()
                         loadRList()
                     }
                 }
-                .setNegativeButton("Discard") { _: DialogInterface, _:Int ->
+                .setNegativeButton("Discard") { _: DialogInterface, _: Int ->
                     Toast.makeText(applicationContext, "Changes not saved", Toast.LENGTH_SHORT).show()
                 }
                 .create()
-        fab.setOnClickListener { builder.show() }
     }
 
     private fun loadRList() {

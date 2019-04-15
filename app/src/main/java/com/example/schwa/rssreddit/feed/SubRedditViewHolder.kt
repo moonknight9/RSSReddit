@@ -10,7 +10,23 @@ import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder
 class SubRedditViewHolder(view: View) : GroupViewHolder(view) {
     private var name: TextView = view.findViewById(R.id.sub_reddit_name)
 
-    fun setName(group: ExpandableGroup<Parcelable>) {
+    fun setSubRedditView(group: ExpandableGroup<Parcelable>) {
+        setName(group)
+        setSubRedditCreationViewClickListener()
+    }
+
+    private fun setName(group: ExpandableGroup<Parcelable>) {
         name.text = group.title
+    }
+
+    private fun setSubRedditCreationViewClickListener() {
+        itemView.setOnLongClickListener {
+            if (name.text.isNullOrBlank()) {
+                false
+            } else {
+                Feeds.getInstance().getSubRedditCreationForm(name.text.toString()).show()
+                true
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ class FeedRecycleAdapter(feed: List<ExpandableGroup<RedditPostGroupHolder>>)
     }
 
     override fun onBindGroupViewHolder(holder: SubRedditViewHolder, flatPosition: Int, group: ExpandableGroup<Parcelable>) {
-        holder.setName(group)
+        holder.setSubRedditView(group)
     }
 
     override fun onCreateChildViewHolder(parent: ViewGroup, viewType: Int): RedditPostViewHolder {
