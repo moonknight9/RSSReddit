@@ -88,7 +88,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
                     .filterNot { "AutoModerator" == it.getString("author") }
                     .mapTo(postList) {
                         subName = it.getString("subreddit")
-                        getPostJSON(it)
+                        RedditJSONUtils.getPostFromJSON(it)
                     }
             // find DB object to be able to update it instead of creating a new SubReddit
             val subReddit = subBox.query().equal(SubReddit_.name, subName).build().findFirst()
@@ -135,19 +135,5 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         }
 
         notificationManager.notify(post.id!!.hashCode(), mBuilder.build())
-    }
-
-    private fun getPostJSON(jsonObj: JSONObject): RedditPost {
-        val post = RedditPost()
-        post.id = jsonObj.getString("id")
-        post.title = jsonObj.getString("title")
-        post.numComments = jsonObj.getLong("num_comments")
-        post.text = jsonObj.getString("selftext")
-        post.ups = jsonObj.getLong("ups")
-        post.url = jsonObj.getString("url")
-        post.html = jsonObj.getString("selftext_html")
-        post.permalink = "https://www.reddit.com" + jsonObj.getString("permalink")
-        post.thumbnail = jsonObj.getString("thumbnail")
-        return post
     }
 }

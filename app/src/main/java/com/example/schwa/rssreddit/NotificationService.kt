@@ -3,7 +3,6 @@ package com.example.schwa.rssreddit
 import android.content.Context
 import android.content.Intent
 import android.support.v4.app.JobIntentService
-import com.example.schwa.rssreddit.feed.SubReddit
 
 class NotificationService : JobIntentService() {
     companion object {
@@ -16,6 +15,6 @@ class NotificationService : JobIntentService() {
     }
 
     override fun onHandleWork(intent: Intent) {
-        JSONReader(applicationContext).execute(*SubReddit.box(applicationContext).all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray())
+        RedditJSONUtils.pullSubReddit(applicationContext)
     }
 }

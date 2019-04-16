@@ -23,10 +23,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.Toast
-import com.example.schwa.rssreddit.DBHelper
-import com.example.schwa.rssreddit.JSONReader
-import com.example.schwa.rssreddit.MyAlarmReceiver
-import com.example.schwa.rssreddit.R
+import com.example.schwa.rssreddit.*
 import com.example.schwa.rssreddit.settings.SettingsActivity
 import io.objectbox.android.AndroidObjectBrowser
 import java.util.concurrent.TimeUnit
@@ -120,7 +117,7 @@ class Feeds : AppCompatActivity() {
         return AlertDialog.Builder(this)
                 .setView(formElementsView)
                 .setTitle("Add Student")
-                .setPositiveButton("Add") { _: DialogInterface, _: Int ->
+                .setPositiveButton("Save") { _: DialogInterface, _: Int ->
                     if (TextUtils.isEmpty(subName.text) || TextUtils.isEmpty(subVotes.text) || TextUtils.isEmpty(subPosts.text)) {
                         //TODO add check if subName is valid / already there etc
                         Toast.makeText(applicationContext, "Subreddit incomplete - not saved", Toast.LENGTH_SHORT).show()
@@ -147,11 +144,7 @@ class Feeds : AppCompatActivity() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        JSONReader(applicationContext, ViewContainer(feedView)).execute(
-                *SubReddit.box(applicationContext).all.map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }.toTypedArray()
-                //"https://www.reddit.com/r/NintendoSwitch/.json?limit=10"
-                //,"https://www.reddit.com/r/heroesofthestorm/.json?limit=5"
-        )
+        RedditJSONUtils.pullSubReddit(applicationContext, ViewContainer(feedView))
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
             scheduleAlarm()
         } else if (DEBUG) {
