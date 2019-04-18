@@ -52,13 +52,16 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         val seenSubRedditList = getResultList(resultList, subBox)
 
         if (container != null && container.list.isShown) {
-            // TODO old Posts won't get deleted even if they are removed from
-            RedditPost.box(context).removeAll()
-            // update DB
-            subBox.put(seenSubRedditList)
-
             //refresh layout with loaded list
-            container.list.adapter = FeedRecycleAdapter(seenSubRedditList.map { SubRedditGroupHolder(it) })
+            container.list.adapter = FeedRecycleAdapter(seenSubRedditList.map {
+                val subHolder = SubRedditGroupHolder(it)
+                subHolder.onExpand = {
+                    // TODO workaround to not mix UI and DB code, is there a better solution?
+                    subBox.put(it)
+                    Logger.getGlobal().log(Level.INFO, "${it.name} marked as read")
+                }
+                subHolder
+            })
 
             //cancel all notifications when app is loaded
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
@@ -67,8 +70,6 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         } else {
             val subList = subBox.all
             if (subList != null && subList.isEmpty()) {
-                // TODO old Posts won't get deleted even if they are removed from
-                RedditPost.box(context).removeAll()
                 subBox.put(seenSubRedditList)
             } else {
                 generateNotifications(seenSubRedditList)
@@ -93,6 +94,8 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             // find DB object to be able to update it instead of creating a new SubReddit
             val subReddit = subBox.query().equal(SubReddit_.name, subName).build().findFirst()
             //TODO Fix post lateinit issue
+            subReddit?.posts?.setRemoveFromTargetBox(true)
+            // Setting RemoveFromTarget should auto delete old RedditPosts that are not in posts anymore
             subReddit?.posts?.clear()
             subReddit?.posts?.addAll(postList)
             // fallback to creating a new SubReddit if something goes wrong, "should" not happen
@@ -109,7 +112,11 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             newSubReddit.posts
                     .filterNot { oldSubReddit?.posts?.contains(it) ?: false }
                     .filter { it.ups >= newSubReddit.reqUpVotes }
-                    .forEach { sendNotification(it) }
+                    .forEach {
+                        sendNotification(it)
+                        // mark as "read"
+                        RedditPost.box(context).put(it)
+                    }
         }
     }
 
@@ -130,7 +137,7 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("CHANNELID", "WhatEver", NotificationManager.IMPORTANCE_DEFAULT)
+            val channel = NotificationChannel("CHANNELID", "Trending Post", NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
 
