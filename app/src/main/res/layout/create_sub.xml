@@ -26,6 +26,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/sub_notification_switch" android:checked="true" android:textSize="18sp"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/delete_sub_button"
+        android:text="Delete(no confirm)"
+        android:visibility="gone"/>
     <!--<LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"

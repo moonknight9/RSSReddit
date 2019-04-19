@@ -42,6 +42,12 @@ class SubReddit {
         }
     }
 
+    fun delete(context: Context) {
+        // ObjectBox does not support cascading delete yet, need to do it manually
+        RedditPost.box(context).remove(posts)
+        SubReddit.box(context).remove(this)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

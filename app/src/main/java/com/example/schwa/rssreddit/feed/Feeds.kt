@@ -20,6 +20,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.Toast
@@ -100,21 +101,24 @@ class Feeds : AppCompatActivity() {
         val subPosts = formElementsView.findViewById(R.id.sub_post_num) as EditText
         val subVotes = formElementsView.findViewById(R.id.sub_votes_num) as EditText
         val noti = formElementsView.findViewById(R.id.sub_notification_switch) as Switch
+        val delete = formElementsView.findViewById(R.id.delete_sub_button) as Button
 
         //Prefill Dialog if we got called with a name
         var subRedditID : Long? = null
+        var subReddit : SubReddit? = null
         if (!subRedditName.isNullOrBlank()) {
-            val subReddit = SubReddit.box(applicationContext).query().equal(SubReddit_.name, subRedditName).build().findFirst()
+            subReddit = SubReddit.box(applicationContext).query().equal(SubReddit_.name, subRedditName).build().findFirst()
             if (subReddit != null) {
                 subRedditID = subReddit.id
                 subName.setText(subReddit.name)
                 subPosts.setText(subReddit.maxPostNum.toString())
                 subVotes.setText(subReddit.reqUpVotes.toString())
                 noti.isChecked = subReddit.notiEnabled
+                delete.visibility = View.VISIBLE
             }
         }
 
-        return AlertDialog.Builder(this)
+        val subCreationDialog = AlertDialog.Builder(this)
                 .setView(formElementsView)
                 .setTitle("Add Student")
                 .setPositiveButton("Save") { _: DialogInterface, _: Int ->
@@ -138,6 +142,15 @@ class Feeds : AppCompatActivity() {
                     Toast.makeText(applicationContext, "Changes not saved", Toast.LENGTH_SHORT).show()
                 }
                 .create()
+        if (subReddit != null) {
+            delete.setOnClickListener {
+                subReddit.delete(applicationContext)
+                Toast.makeText(applicationContext, "${subName.text} deleted", Toast.LENGTH_SHORT).show()
+                loadRList()
+                subCreationDialog.cancel()
+            }
+        }
+        return subCreationDialog
     }
 
     private fun loadRList() {
