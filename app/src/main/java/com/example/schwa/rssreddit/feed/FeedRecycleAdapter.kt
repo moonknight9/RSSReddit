@@ -29,6 +29,5 @@ class FeedRecycleAdapter(feed: List<ExpandableGroup<RedditPostGroupHolder>>)
         holder.addThreadView(group.items[childIndex] as RedditPostGroupHolder)
     }
 
-    //TODO override onGroup/Child expand to only mark those as "seen"
     //TODO only pull on expand? Loading is getting slow really quick
 }

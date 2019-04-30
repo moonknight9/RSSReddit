@@ -24,7 +24,7 @@ class SubReddit {
         name = ""
     }
 
-    constructor(post: ArrayList<RedditPost>, subName: String) {
+    constructor(post: List<RedditPost>, subName: String) {
         name = subName
         posts.addAll(post)
     }
@@ -40,6 +40,10 @@ class SubReddit {
         fun box(context: Context): Box<SubReddit> {
             return DBHelper.getBoxStore(context).boxFor(SubReddit::class.java)
         }
+    }
+
+    fun save(context: Context) {
+        // this function would not be needed, if setRemoveFromTargetBox would work
     }
 
     fun delete(context: Context) {

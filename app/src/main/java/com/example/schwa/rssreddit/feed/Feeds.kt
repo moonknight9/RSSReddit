@@ -27,6 +27,7 @@ import android.widget.Toast
 import com.example.schwa.rssreddit.*
 import com.example.schwa.rssreddit.settings.SettingsActivity
 import io.objectbox.android.AndroidObjectBrowser
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -73,6 +74,16 @@ class Feeds : AppCompatActivity() {
         // Plus btn
         addSubButtonInit()
 
+        addRefreshLayout()
+        loadRList()
+    }
+
+    private fun addSubButtonInit() {
+        val fab = findViewById<View>(R.id.add_sub_fab) as FloatingActionButton
+        fab.setOnClickListener { getSubRedditCreationForm().show() }
+    }
+
+    private fun addRefreshLayout() {
         swipeContainer = findViewById(R.id.swipeRecycler)
         // Configure the refreshing colors
         swipeContainer!!.setColorSchemeColors(
@@ -85,12 +96,6 @@ class Feeds : AppCompatActivity() {
         swipeContainer!!.setOnRefreshListener {
             loadRList()
         }
-        loadRList()
-    }
-
-    private fun addSubButtonInit() {
-        val fab = findViewById<View>(R.id.add_sub_fab) as FloatingActionButton
-        fab.setOnClickListener { getSubRedditCreationForm().show() }
     }
 
     fun getSubRedditCreationForm(subRedditName: String? = null): AlertDialog {
@@ -104,8 +109,8 @@ class Feeds : AppCompatActivity() {
         val delete = formElementsView.findViewById(R.id.delete_sub_button) as Button
 
         //Prefill Dialog if we got called with a name
-        var subRedditID : Long? = null
-        var subReddit : SubReddit? = null
+        var subRedditID: Long? = null
+        var subReddit: SubReddit? = null
         if (!subRedditName.isNullOrBlank()) {
             subReddit = SubReddit.box(applicationContext).query().equal(SubReddit_.name, subRedditName).build().findFirst()
             if (subReddit != null) {
@@ -120,11 +125,11 @@ class Feeds : AppCompatActivity() {
 
         val subCreationDialog = AlertDialog.Builder(this)
                 .setView(formElementsView)
-                .setTitle("Add Student")
+                .setTitle("Add SubReddit")
                 .setPositiveButton("Save") { _: DialogInterface, _: Int ->
                     if (TextUtils.isEmpty(subName.text) || TextUtils.isEmpty(subVotes.text) || TextUtils.isEmpty(subPosts.text)) {
                         //TODO add check if subName is valid / already there etc
-                        Toast.makeText(applicationContext, "Subreddit incomplete - not saved", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "SubReddit incomplete - not saved", Toast.LENGTH_SHORT).show()
                     } else {
                         val sub = SubReddit(subName.text.toString(),
                                 Integer.parseInt(subPosts.text.toString()),
@@ -133,6 +138,7 @@ class Feeds : AppCompatActivity() {
                         if (subRedditID != null) {
                             sub.id = subRedditID
                         }
+                        sub.posts.setRemoveFromTargetBox(true)
                         SubReddit.box(applicationContext).put(sub)
                         Toast.makeText(applicationContext, "${subName.text} added", Toast.LENGTH_SHORT).show()
                         loadRList()
@@ -157,6 +163,7 @@ class Feeds : AppCompatActivity() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
+        swipeContainer?.isRefreshing = true
         RedditJSONUtils.pullSubReddit(applicationContext, ViewContainer(feedView))
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
             scheduleAlarm()
@@ -177,17 +184,19 @@ class Feeds : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
 
-        return if (id == R.id.action_settings) {
-            val intent = Intent(applicationContext, SettingsActivity::class.java)
-            startActivity(intent)
-            true
-        } else if (id == R.id.action_delete_subs) {
-            SubReddit.box(applicationContext).removeAll()
-            Toast.makeText(applicationContext, "All subs deleted", Toast.LENGTH_LONG).show()
-            loadRList()
-            true
-        } else {
-            super.onOptionsItemSelected(item)
+        return when (id) {
+            R.id.action_settings -> {
+                val intent = Intent(applicationContext, SettingsActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            R.id.action_delete_subs -> {
+                SubReddit.box(applicationContext).removeAll()
+                Toast.makeText(applicationContext, "All subs deleted", Toast.LENGTH_LONG).show()
+                loadRList()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

@@ -1,8 +1,6 @@
 package com.example.schwa.rssreddit
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,109 +12,88 @@ import com.example.schwa.rssreddit.feed.*
 import io.objectbox.Box
 import org.json.JSONObject
 import java.net.URL
+import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
 
-class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : AsyncTask<String, Void, ArrayList<JSONObject>>() {
+class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : AsyncTask<String, Void, List<JSONObject>>() {
 
     val container = viewContainer
 
-    override fun doInBackground(vararg params: String?): ArrayList<JSONObject> {
+    override fun doInBackground(vararg params: String?): List<JSONObject> {
         Logger.getGlobal().log(Level.INFO, "<AsyncTask> Pulling new information from Reddit")
-        if (container != null && container.list.isShown) {
-            Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = true }
-        }
-        val jsonArr = ArrayList<JSONObject>()
-        var subName = ""
+
         try {
-            params.map {
-                subName = it.orEmpty()
-                URL(it).readText()
-            }.forEach { jsonArr.add(JSONObject(it)) }
+            return params.map { URL(it).readText() }.map { JSONObject(it) }.toList()
         } catch (e: Exception) {
-            Feeds.getInstance().runOnUiThread {
-                Toast.makeText(context,
-                        """SubReddit $subName not found. Please check your connection.""",
-                        Toast.LENGTH_LONG).show()
-            }
-            Logger.getGlobal().log(Level.WARNING, e.message)
+            Logger.getGlobal().log(Level.INFO, e.message)
         }
-        return jsonArr
+
+        return emptyList()
     }
 
-    override fun onPostExecute(resultList: ArrayList<JSONObject>) {
-        super.onPostExecute(resultList)
+    override fun onPostExecute(jsonSubReddits: List<JSONObject>) {
+        super.onPostExecute(jsonSubReddits)
 
-        val subBox = SubReddit.box(context)
-        val seenSubRedditList = getResultList(resultList, subBox)
+        if (jsonSubReddits.isEmpty()) {
+            val noSubFound = "No SubReddit found. Please make sure you have a SubReddit and connection"
+            Toast.makeText(context, noSubFound, Toast.LENGTH_LONG).show()
+            Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = false }
+            return
+        }
+
+        val subReddits = getSubReddits(jsonSubReddits)
 
         if (container != null && container.list.isShown) {
             //refresh layout with loaded list
-            container.list.adapter = FeedRecycleAdapter(seenSubRedditList.map {
-                val subHolder = SubRedditGroupHolder(it)
-                subHolder.onExpand = {
-                    // TODO workaround to not mix UI and DB code, is there a better solution?
-                    subBox.put(it)
-                    Logger.getGlobal().log(Level.INFO, "${it.name} marked as read")
-                }
-                subHolder
-            })
+            container.list.adapter = FeedRecycleAdapter(subReddits.map { SubRedditGroupHolder(it, context) })
 
-            //cancel all notifications when app is loaded
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            notificationManager.cancelAll()
             Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = false }
         } else {
+            val subBox = SubReddit.box(context)
             val subList = subBox.all
             if (subList != null && subList.isEmpty()) {
-                subBox.put(seenSubRedditList)
+                subBox.put(subReddits)
             } else {
-                generateNotifications(seenSubRedditList)
+                sendNotificationIfRequired(subReddits)
             }
         }
     }
 
-    private fun getResultList(resultList: ArrayList<JSONObject>, subBox: Box<SubReddit>): ArrayList<SubReddit> {
-        val seenSubRedditList = ArrayList<SubReddit>()
-        for (result in resultList) {
-            val postList = ArrayList<RedditPost>()
-            val posts = result.getJSONObject("data").getJSONArray("children")
-            var subName = ""
-            (0..(posts.length() - 1))
-                    .map { posts.getJSONObject(it).getJSONObject("data") }
-                    //No daily question threads
-                    .filterNot { "AutoModerator" == it.getString("author") }
-                    .mapTo(postList) {
-                        subName = it.getString("subreddit")
-                        RedditJSONUtils.getPostFromJSON(it)
-                    }
-            // find DB object to be able to update it instead of creating a new SubReddit
-            val subReddit = subBox.query().equal(SubReddit_.name, subName).build().findFirst()
-            //TODO Fix post lateinit issue
-            subReddit?.posts?.setRemoveFromTargetBox(true)
-            // Setting RemoveFromTarget should auto delete old RedditPosts that are not in posts anymore
-            subReddit?.posts?.clear()
-            subReddit?.posts?.addAll(postList)
-            // fallback to creating a new SubReddit if something goes wrong, "should" not happen
-            seenSubRedditList.add(subReddit ?: SubReddit(postList, subName))
-        }
-        return seenSubRedditList
+    private fun getSubReddits(jsonSubReddits: List<JSONObject>): List<SubReddit> {
+        return jsonSubReddits.map { getSubRedditFromJSON(it) }.toList()
     }
 
-    private fun generateNotifications(seenSubRedditList: ArrayList<SubReddit>) {
-        (0 until (seenSubRedditList.size)).forEach {
-            val newSubReddit = seenSubRedditList[it]
+    private fun getSubRedditFromJSON(jsonSub: JSONObject): SubReddit {
+        val postList = RedditJSONUtils.getPostsFromJSONSub(jsonSub)
+        // find DB object to not create duplicates
+        postList.forEach { updatePostDBID(RedditPost.box(context), it) }
+
+        val subName = RedditJSONUtils.getSubNameFromJSONSub(jsonSub)
+        // find DB object to be able to update it instead of creating a new SubReddit
+        val subReddit = SubReddit.box(context).query().equal(SubReddit_.name, subName).build().findFirst()
+        //TODO Fix post lateinit issue
+        subReddit?.posts?.setRemoveFromTargetBox(true)
+        // Setting RemoveFromTarget should auto delete old RedditPosts that are not in posts anymore
+        subReddit?.posts?.clear()
+        subReddit?.posts?.addAll(postList)
+        // fallback to creating a new SubReddit if something goes wrong, "should" not happen
+        return subReddit ?: SubReddit(postList, subName)
+    }
+
+    private fun updatePostDBID(box: Box<RedditPost>, post: RedditPost) {
+        box.query().equal(RedditPost_.id, post.id!!).build().findFirst()?.let { post.dbId = it.dbId }
+    }
+
+    private fun sendNotificationIfRequired(seenSubRedditList: List<SubReddit>) {
+        seenSubRedditList.filter { it.notiEnabled }.forEach { newSubReddit ->
             val oldSubReddit = SubReddit.box(context).query().equal(SubReddit_.name, newSubReddit.name).build().findFirst()
 
             newSubReddit.posts
                     .filterNot { oldSubReddit?.posts?.contains(it) ?: false }
                     .filter { it.ups >= newSubReddit.reqUpVotes }
-                    .forEach {
-                        sendNotification(it)
-                        // mark as "read"
-                        RedditPost.box(context).put(it)
-                    }
+                    .forEach { sendNotification(it) }
         }
     }
 

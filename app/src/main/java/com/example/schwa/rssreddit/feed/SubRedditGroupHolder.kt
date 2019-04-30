@@ -1,11 +1,32 @@
 package com.example.schwa.rssreddit.feed
 
+import android.app.NotificationManager
+import android.content.Context
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
+import java.util.logging.Level
+import java.util.logging.Logger
 
-class SubRedditGroupHolder(subReddit: SubReddit) : ExpandableGroup<RedditPostGroupHolder>(subReddit.name, subReddit.posts.map { RedditPostGroupHolder(it) }) {
+class SubRedditGroupHolder(subReddit: SubReddit, context: Context)
+    : ExpandableGroup<RedditPostGroupHolder>(subReddit.name, subReddit.posts.map { RedditPostGroupHolder(it) }) {
 
     // Put any action that should happen on expand in here, like marking SubReddit as read
-    var onExpand : () -> Unit = {}
+    var onExpand: () -> Unit = {}
+
+    init {
+        onExpand = {
+            // TODO workaround to not mix UI and DB code, is there a better solution?
+            subReddit.posts.setRemoveFromTargetBox(true)
+            SubReddit.box(context).put(subReddit)
+            Logger.getGlobal().log(Level.INFO, "${subReddit.name} marked as read")
+
+            cancelExpandedSubNotifiactions(subReddit, context)
+        }
+    }
+
+    private fun cancelExpandedSubNotifiactions(subReddit: SubReddit, context: Context) {
+        val notificationManager = (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+        subReddit.posts.forEach { notificationManager.cancel(it.hashCode()) }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
