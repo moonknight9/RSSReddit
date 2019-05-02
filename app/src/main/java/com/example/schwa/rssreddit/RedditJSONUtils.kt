@@ -1,6 +1,7 @@
 package com.example.schwa.rssreddit
 
 import android.content.Context
+import android.os.AsyncTask
 import com.example.schwa.rssreddit.feed.RedditPost
 import com.example.schwa.rssreddit.feed.SubReddit
 import com.example.schwa.rssreddit.feed.ViewContainer
@@ -9,11 +10,15 @@ import org.json.JSONObject
 
 object RedditJSONUtils {
 
-    fun pullSubReddit(applicationContext: Context, viewContainer: ViewContainer? = null) {
-        JSONReader(applicationContext, viewContainer)
-                .execute(*SubReddit.box(applicationContext).all
-                        .map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }
-                        .toTypedArray())
+    fun pullSubReddit(applicationContext: Context, viewContainer: ViewContainer? = null)
+            : AsyncTask<String, Void, List<JSONObject>> {
+        return JSONReader(applicationContext, viewContainer).execute(*generateRedditRequest(applicationContext))
+    }
+
+    private fun generateRedditRequest(applicationContext: Context): Array<String> {
+        return SubReddit.box(applicationContext).all
+                .map { "https://www.reddit.com/r/${it.name}/.json?limit=${it.maxPostNum}" }
+                .toTypedArray()
     }
 
     fun getPostsFromJSONSub(jsonSubReddit: JSONObject): List<RedditPost> {

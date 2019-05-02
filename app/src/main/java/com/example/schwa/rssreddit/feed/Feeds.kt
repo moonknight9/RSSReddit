@@ -1,7 +1,6 @@
 package com.example.schwa.rssreddit.feed
 
 import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -24,18 +23,18 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.Toast
-import com.example.schwa.rssreddit.*
+import com.example.schwa.rssreddit.DBHelper
+import com.example.schwa.rssreddit.MyAlarmReceiver
+import com.example.schwa.rssreddit.R
+import com.example.schwa.rssreddit.RedditJSONUtils
 import com.example.schwa.rssreddit.settings.SettingsActivity
 import io.objectbox.android.AndroidObjectBrowser
-import java.util.*
-import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 
 
 class Feeds : AppCompatActivity() {
 
-    var swipeContainer: SwipeRefreshLayout? = null
     var DEBUG = true
 
     companion object {
@@ -84,16 +83,16 @@ class Feeds : AppCompatActivity() {
     }
 
     private fun addRefreshLayout() {
-        swipeContainer = findViewById(R.id.swipeRecycler)
+        val swipeContainer = findViewById<SwipeRefreshLayout>(R.id.swipeRecycler)
         // Configure the refreshing colors
-        swipeContainer!!.setColorSchemeColors(
+        swipeContainer.setColorSchemeColors(
                 ContextCompat.getColor(applicationContext, android.R.color.holo_blue_bright),
                 ContextCompat.getColor(applicationContext, android.R.color.holo_green_light),
                 ContextCompat.getColor(applicationContext, android.R.color.holo_orange_light),
                 ContextCompat.getColor(applicationContext, android.R.color.holo_red_light)
         )
 
-        swipeContainer!!.setOnRefreshListener {
+        swipeContainer.setOnRefreshListener {
             loadRList()
         }
     }
@@ -163,13 +162,25 @@ class Feeds : AppCompatActivity() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
         feedView.layoutManager = LinearLayoutManager(this)
-        swipeContainer?.isRefreshing = true
-        RedditJSONUtils.pullSubReddit(applicationContext, ViewContainer(feedView))
+
+        loadAndRefreshContainer(feedView)
+
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
-            scheduleAlarm()
+            MyAlarmReceiver.scheduleAlarm(applicationContext, getSystemService(Context.ALARM_SERVICE) as AlarmManager, DEBUG)
         } else if (DEBUG) {
             Toast.makeText(applicationContext, "Notification disabled", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun loadAndRefreshContainer(feedView: RecyclerView) {
+        // new thread to not freeze UI while waiting for pull
+        val swipeContainer = findViewById<SwipeRefreshLayout>(R.id.swipeRecycler)
+        Thread {
+            swipeContainer.isRefreshing = true
+            // call get to wait until pull is finished and turn refreshing off
+            RedditJSONUtils.pullSubReddit(applicationContext, ViewContainer(feedView)).get()
+            swipeContainer.isRefreshing = false
+        }.start()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -199,31 +210,5 @@ class Feeds : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-    private fun scheduleAlarm() {
-        // Construct an intent that will execute the AlarmReceiver
-        val intent = Intent(applicationContext, MyAlarmReceiver::class.java)
-        // Create a PendingIntent to be triggered when the alarm goes off
-        //val pIntent = PendingIntent.getService(this, MyAlarmReceiver.REQUEST_CODE,
-        //        intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val pIntent = PendingIntent.getBroadcast(applicationContext, MyAlarmReceiver.REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        // Setup periodic alarm every every half hour from this point onwards
-        val interval: Long = TimeUnit.MINUTES.toMillis(
-                PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        .getString("sync_frequency", "30").toLong())
-        Logger.getGlobal().log(Level.INFO, "Refresh interval: $interval")
-        if (DEBUG) {
-            Toast.makeText(applicationContext,
-                    "Interval set to ${TimeUnit.MILLISECONDS.toMinutes(interval)}",
-                    Toast.LENGTH_LONG).show()
-        }
-
-        val firstMillis = System.currentTimeMillis() // alarm is set right away
-        val alarm = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        // First parameter is the type: ELAPSED_REALTIME, ELAPSED_REALTIME_WAKEUP, RTC_WAKEUP
-        // Interval can be INTERVAL_FIFTEEN_MINUTES, INTERVAL_HALF_HOUR, INTERVAL_HOUR, INTERVAL_DAY
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, interval, pIntent)
-    }
-
 
 }

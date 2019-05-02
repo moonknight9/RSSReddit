@@ -39,7 +39,6 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
         if (jsonSubReddits.isEmpty()) {
             val noSubFound = "No SubReddit found. Please make sure you have a SubReddit and connection"
             Toast.makeText(context, noSubFound, Toast.LENGTH_LONG).show()
-            Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = false }
             return
         }
 
@@ -49,7 +48,6 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             //refresh layout with loaded list
             container.list.adapter = FeedRecycleAdapter(subReddits.map { SubRedditGroupHolder(it, context) })
 
-            Feeds.getInstance().runOnUiThread { Feeds.getInstance().swipeContainer!!.isRefreshing = false }
         } else {
             val subBox = SubReddit.box(context)
             val subList = subBox.all
