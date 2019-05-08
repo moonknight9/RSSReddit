@@ -33,17 +33,18 @@
         android:id="@+id/delete_sub_button"
         android:text="Delete(no confirm)"
         android:visibility="gone"/>
-    <!--<LinearLayout
+
+    <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <Button
-                android:text="Add"
+                android:text="Save"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/sub_add"/>
+                android:layout_height="wrap_content" android:id="@+id/sub_save"/>
         <Button
                 android:text="Discard"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/sub_discard"/>
-    </LinearLayout>-->
+    </LinearLayout>
 </LinearLayout>

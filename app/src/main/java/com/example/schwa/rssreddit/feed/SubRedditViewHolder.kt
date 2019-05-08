@@ -4,10 +4,9 @@ import android.os.Parcelable
 import android.view.View
 import android.widget.TextView
 import com.example.schwa.rssreddit.R
+import com.example.schwa.rssreddit.subreddit.SubRedditCreationView
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class SubRedditViewHolder(view: View) : GroupViewHolder(view) {
     private var name: TextView = view.findViewById(R.id.sub_reddit_name)
@@ -28,7 +27,7 @@ class SubRedditViewHolder(view: View) : GroupViewHolder(view) {
             if (name.text.isNullOrBlank()) {
                 false
             } else {
-                Feeds.getInstance().getSubRedditCreationForm(name.text.toString()).show()
+                SubRedditCreationView.start(itemView.context, name.text.toString())
                 true
             }
         }
@@ -41,6 +40,5 @@ class SubRedditViewHolder(view: View) : GroupViewHolder(view) {
     override fun expand() {
         super.expand()
         onExpand()
-        Logger.getGlobal().log(Level.INFO, "Expand called")
     }
 }

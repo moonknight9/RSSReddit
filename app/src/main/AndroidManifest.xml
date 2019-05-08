@@ -36,6 +36,9 @@
                 android:name="com.example.schwa.rssreddit.settings.SettingsActivity"
                 android:label="@string/title_activity_settings">
         </activity>
+        <activity android:name=".subreddit.SubRedditCreationView"
+            android:label="SubReddit creation">
+        </activity>
     </application>
 
 </manifest>

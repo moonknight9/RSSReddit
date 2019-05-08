@@ -2,32 +2,26 @@ package com.example.schwa.rssreddit.feed
 
 import android.app.AlarmManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
-import android.text.TextUtils
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Switch
 import android.widget.Toast
 import com.example.schwa.rssreddit.DBHelper
 import com.example.schwa.rssreddit.MyAlarmReceiver
 import com.example.schwa.rssreddit.R
 import com.example.schwa.rssreddit.RedditJSONUtils
 import com.example.schwa.rssreddit.settings.SettingsActivity
+import com.example.schwa.rssreddit.subreddit.SubRedditCreationView
 import io.objectbox.android.AndroidObjectBrowser
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -35,21 +29,7 @@ import java.util.logging.Logger
 
 class Feeds : AppCompatActivity() {
 
-    var DEBUG = true
-
-    companion object {
-        private var thisInstance: Feeds? = null
-        fun getInstance(): Feeds {
-            if (thisInstance == null) {
-                thisInstance = Feeds()
-            }
-            return thisInstance!!
-        }
-    }
-
-    init {
-        thisInstance = this
-    }
+    var debug = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,9 +38,9 @@ class Feeds : AppCompatActivity() {
             DBHelper.build(this)
         }
 
-        DEBUG = PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("debug_switch", true)
+        debug = PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("debug_switch", true)
 
-        if (DEBUG) {
+        if (debug) {
             val started = AndroidObjectBrowser(DBHelper.boxStore).start(this)
             Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
         }
@@ -78,8 +58,8 @@ class Feeds : AppCompatActivity() {
     }
 
     private fun addSubButtonInit() {
-        val fab = findViewById<View>(R.id.add_sub_fab) as FloatingActionButton
-        fab.setOnClickListener { getSubRedditCreationForm().show() }
+        val fab = findViewById<FloatingActionButton>(R.id.add_sub_fab)
+        fab.setOnClickListener { SubRedditCreationView.start(this) }
     }
 
     private fun addRefreshLayout() {
@@ -97,67 +77,6 @@ class Feeds : AppCompatActivity() {
         }
     }
 
-    fun getSubRedditCreationForm(subRedditName: String? = null): AlertDialog {
-        val inflater = applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val formElementsView = inflater.inflate(R.layout.create_sub, null, false)
-
-        val subName = formElementsView.findViewById(R.id.sub_name) as EditText
-        val subPosts = formElementsView.findViewById(R.id.sub_post_num) as EditText
-        val subVotes = formElementsView.findViewById(R.id.sub_votes_num) as EditText
-        val noti = formElementsView.findViewById(R.id.sub_notification_switch) as Switch
-        val delete = formElementsView.findViewById(R.id.delete_sub_button) as Button
-
-        //Prefill Dialog if we got called with a name
-        var subRedditID: Long? = null
-        var subReddit: SubReddit? = null
-        if (!subRedditName.isNullOrBlank()) {
-            subReddit = SubReddit.box(applicationContext).query().equal(SubReddit_.name, subRedditName).build().findFirst()
-            if (subReddit != null) {
-                subRedditID = subReddit.id
-                subName.setText(subReddit.name)
-                subPosts.setText(subReddit.maxPostNum.toString())
-                subVotes.setText(subReddit.reqUpVotes.toString())
-                noti.isChecked = subReddit.notiEnabled
-                delete.visibility = View.VISIBLE
-            }
-        }
-
-        val subCreationDialog = AlertDialog.Builder(this)
-                .setView(formElementsView)
-                .setTitle("Add SubReddit")
-                .setPositiveButton("Save") { _: DialogInterface, _: Int ->
-                    if (TextUtils.isEmpty(subName.text) || TextUtils.isEmpty(subVotes.text) || TextUtils.isEmpty(subPosts.text)) {
-                        //TODO add check if subName is valid / already there etc
-                        Toast.makeText(applicationContext, "SubReddit incomplete - not saved", Toast.LENGTH_SHORT).show()
-                    } else {
-                        val sub = SubReddit(subName.text.toString(),
-                                Integer.parseInt(subPosts.text.toString()),
-                                Integer.parseInt(subVotes.text.toString()),
-                                noti.isChecked)
-                        if (subRedditID != null) {
-                            sub.id = subRedditID
-                        }
-                        sub.posts.setRemoveFromTargetBox(true)
-                        SubReddit.box(applicationContext).put(sub)
-                        Toast.makeText(applicationContext, "${subName.text} added", Toast.LENGTH_SHORT).show()
-                        loadRList()
-                    }
-                }
-                .setNegativeButton("Discard") { _: DialogInterface, _: Int ->
-                    Toast.makeText(applicationContext, "Changes not saved", Toast.LENGTH_SHORT).show()
-                }
-                .create()
-        if (subReddit != null) {
-            delete.setOnClickListener {
-                subReddit.delete(applicationContext)
-                Toast.makeText(applicationContext, "${subName.text} deleted", Toast.LENGTH_SHORT).show()
-                loadRList()
-                subCreationDialog.cancel()
-            }
-        }
-        return subCreationDialog
-    }
-
     private fun loadRList() {
         val feedView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
         feedView.setHasFixedSize(true)
@@ -166,8 +85,8 @@ class Feeds : AppCompatActivity() {
         loadAndRefreshContainer(feedView)
 
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
-            MyAlarmReceiver.scheduleAlarm(applicationContext, getSystemService(Context.ALARM_SERVICE) as AlarmManager, DEBUG)
-        } else if (DEBUG) {
+            MyAlarmReceiver.scheduleAlarm(applicationContext, getSystemService(Context.ALARM_SERVICE) as AlarmManager, debug)
+        } else if (debug) {
             Toast.makeText(applicationContext, "Notification disabled", Toast.LENGTH_LONG).show()
         }
     }

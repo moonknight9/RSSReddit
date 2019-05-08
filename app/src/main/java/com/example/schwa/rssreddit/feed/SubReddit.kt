@@ -40,10 +40,9 @@ class SubReddit {
         fun box(context: Context): Box<SubReddit> {
             return DBHelper.getBoxStore(context).boxFor(SubReddit::class.java)
         }
-    }
 
-    fun save(context: Context) {
-        // this function would not be needed, if setRemoveFromTargetBox would work
+        fun findSubByName(subRedditName: String, applicationContext: Context) = SubReddit.box(applicationContext)
+                .query().equal(SubReddit_.name, subRedditName).build().findFirst()
     }
 
     fun delete(context: Context) {
