@@ -28,6 +28,4 @@ class FeedRecycleAdapter(feed: List<ExpandableGroup<RedditPostGroupHolder>>)
     override fun onBindChildViewHolder(holder: RedditPostViewHolder, flatPosition: Int, group: ExpandableGroup<Parcelable>, childIndex: Int) {
         holder.addThreadView(group.items[childIndex] as RedditPostGroupHolder)
     }
-
-    //TODO only pull on expand? Loading is getting slow really quick
 }

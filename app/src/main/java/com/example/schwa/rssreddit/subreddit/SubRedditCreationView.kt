@@ -83,7 +83,6 @@ class SubRedditCreationView : AppCompatActivity() {
     private fun saveSubToDB(sub: SubReddit) {
         // update subID if this is an existing sub otherwise RemoveFromTargetBox does not work
         SubReddit.findSubByName(sub.name, applicationContext)?.let { sub.id = it.id }
-        sub.posts.setRemoveFromTargetBox(true)
-        SubReddit.box(applicationContext).put(sub)
+        sub.save(applicationContext)
     }
 }

@@ -15,15 +15,14 @@ class SubRedditGroupHolder(subReddit: SubReddit, context: Context)
     init {
         onExpand = {
             // TODO workaround to not mix UI and DB code, is there a better solution?
-            subReddit.posts.setRemoveFromTargetBox(true)
-            SubReddit.box(context).put(subReddit)
+            subReddit.save(context)
             Logger.getGlobal().log(Level.INFO, "${subReddit.name} marked as read")
 
-            cancelExpandedSubNotifiactions(subReddit, context)
+            cancelExpandedSubNotifications(subReddit, context)
         }
     }
 
-    private fun cancelExpandedSubNotifiactions(subReddit: SubReddit, context: Context) {
+    private fun cancelExpandedSubNotifications(subReddit: SubReddit, context: Context) {
         val notificationManager = (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
         subReddit.posts.forEach { notificationManager.cancel(it.hashCode()) }
     }

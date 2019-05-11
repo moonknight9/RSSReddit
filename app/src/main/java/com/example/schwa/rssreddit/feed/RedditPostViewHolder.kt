@@ -16,14 +16,17 @@ import java.util.logging.Logger
 
 class RedditPostViewHolder(var parent: Context, var view: View) : ChildViewHolder(view) {
 
+    companion object {
+        private const val THUMBNAIL_SIZE = 140
+    }
+
     fun addThreadView(post: RedditPostGroupHolder) {
 
         val imgView = view.findViewById<View>(R.id.redditThumbnail) as ImageView
         if (post.thumbnail.equals("self")) {
             Picasso.with(view.context)
                     .load(R.drawable.placeholder)
-                    //.resize(metrics.widthPixels, 0)
-                    .resize(140, 140)
+                    .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE)
                     .onlyScaleDown()
                     .centerCrop()
                     .into(imgView)
@@ -48,8 +51,7 @@ class RedditPostViewHolder(var parent: Context, var view: View) : ChildViewHolde
             wm.defaultDisplay.getMetrics(metrics)
             Picasso.with(view.context)
                     .load(post.thumbnail)
-                    //.resize(metrics.widthPixels, 0)
-                    .resize(140, 140)
+                    .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE)
                     .into(imgView)
             imgView.visibility = View.VISIBLE
             imgView.setOnClickListener {

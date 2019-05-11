@@ -51,6 +51,11 @@ class SubReddit {
         SubReddit.box(context).remove(this)
     }
 
+    fun save(context: Context) {
+        posts.setRemoveFromTargetBox(true)
+        SubReddit.box(context).put(this)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

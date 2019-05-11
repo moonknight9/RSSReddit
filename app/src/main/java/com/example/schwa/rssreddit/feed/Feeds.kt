@@ -11,7 +11,6 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -44,22 +43,14 @@ class Feeds : AppCompatActivity() {
             val started = AndroidObjectBrowser(DBHelper.boxStore).start(this)
             Logger.getGlobal().log(Level.INFO, "ObjectBrowser", "Started: $started")
         }
+
         setContentView(R.layout.activity_feeds)
 
-        //Toolbar
-        val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        setSupportActionBar(toolbar)
-
-        // Plus btn
-        addSubButtonInit()
-
+        setSupportActionBar(findViewById(R.id.toolbar))
+        findViewById<FloatingActionButton>(R.id.add_sub_fab).setOnClickListener { SubRedditCreationView.start(this) }
         addRefreshLayout()
-        loadRList()
-    }
 
-    private fun addSubButtonInit() {
-        val fab = findViewById<FloatingActionButton>(R.id.add_sub_fab)
-        fab.setOnClickListener { SubRedditCreationView.start(this) }
+        loadRList()
     }
 
     private fun addRefreshLayout() {
@@ -97,7 +88,11 @@ class Feeds : AppCompatActivity() {
         Thread {
             swipeContainer.isRefreshing = true
             // call get to wait until pull is finished and turn refreshing off
-            RedditJSONUtils.pullSubReddit(applicationContext, ViewContainer(feedView)).get()
+            try {
+                RedditJSONUtils.pullSubReddit(applicationContext, ViewContainer(feedView)).get()
+            } catch (e: Exception) {
+                Toast.makeText(applicationContext, e.message, Toast.LENGTH_LONG).show()
+            }
             swipeContainer.isRefreshing = false
         }.start()
     }

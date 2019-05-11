@@ -47,7 +47,7 @@ object RedditJSONUtils {
         }
     }
 
-    fun getPostFromJSON(jsonObj: JSONObject): RedditPost {
+    private fun getPostFromJSON(jsonObj: JSONObject): RedditPost {
         val post = RedditPost()
         post.id = jsonObj.getString("id")
         post.title = jsonObj.getString("title")
