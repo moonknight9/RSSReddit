@@ -19,8 +19,9 @@ class NotificationService : JobIntentService() {
         }
 
         fun sendNotification(context: Context, uri: String?, title: String?, contentText: String?, bigText: String?, id: String?) {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri)).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
             val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
             val mBuilder = NotificationCompat.Builder(context, "CHANNELID")
@@ -43,6 +44,10 @@ class NotificationService : JobIntentService() {
     }
 
     override fun onHandleWork(intent: Intent) {
-        RedditJSONUtils.pullSubReddit(applicationContext)
+        try {
+            RedditJSONUtils.pullSubReddit(applicationContext)
+        } catch (e: Exception) {
+           // already logged.. do nothing and just try later
+        }
     }
 }

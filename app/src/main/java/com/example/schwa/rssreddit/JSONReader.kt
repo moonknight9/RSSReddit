@@ -21,9 +21,8 @@ class JSONReader(val context: Context, viewContainer: ViewContainer? = null) : A
             return params.map { URL(it).readText() }.map { JSONObject(it) }.toList()
         } catch (e: Exception) {
             Logger.getGlobal().log(Level.INFO, e.message)
+            throw RuntimeException("No SubReddit found. Please make sure you have a SubReddit and connection")
         }
-
-        throw RuntimeException("No SubReddit found. Please make sure you have a SubReddit and connection")
     }
 
     override fun onPostExecute(jsonSubReddits: List<JSONObject>) {
