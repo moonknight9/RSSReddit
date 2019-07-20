@@ -15,6 +15,8 @@ class RedditPost {
     var dbId: Long = 0
     lateinit var subreddit: ToOne<SubReddit>
 
+    var isRead: Boolean = false
+
     var id: String? = null
     var title: String? = null
     @Transient
@@ -44,9 +46,25 @@ class RedditPost {
         return id?.hashCode() ?: 0
     }
 
+    fun save(context: Context) {
+        RedditPost.box(context).put(this)
+    }
+
+    fun updateFromDB(context: Context) {
+        id?.let { redditID ->
+            findPostById(redditID, context)?.let { dbPost ->
+                dbId = dbPost.dbId
+                isRead = dbPost.isRead
+            }
+        }
+    }
+
     companion object {
         fun box(context: Context): Box<RedditPost> {
             return DBHelper.getBoxStore(context).boxFor(RedditPost::class.java)
         }
+
+        fun findPostById(id: String, applicationContext: Context) = RedditPost.box(applicationContext)
+                .query().equal(RedditPost_.id, id).build().findFirst()
     }
 }

@@ -75,10 +75,14 @@ class Feeds : AppCompatActivity() {
 
         loadAndRefreshContainer(feedView)
 
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         if (PreferenceManager.getDefaultSharedPreferences(applicationContext).getBoolean("notifications_new_message", true)) {
-            MyAlarmReceiver.scheduleAlarm(applicationContext, getSystemService(Context.ALARM_SERVICE) as AlarmManager, debug)
-        } else if (debug) {
-            Toast.makeText(applicationContext, "Notification disabled", Toast.LENGTH_LONG).show()
+            MyAlarmReceiver.scheduleAlarm(applicationContext, alarmManager, debug)
+        } else {
+            MyAlarmReceiver.stopAlarm(applicationContext, alarmManager)
+            if (debug) {
+                Toast.makeText(applicationContext, "Notification disabled", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

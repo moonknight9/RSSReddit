@@ -42,7 +42,7 @@
     },
     {
       "id": "2:7461935498696532888",
-      "lastPropertyId": "4:5364418099469991247",
+      "lastPropertyId": "5:4504659259412795601",
       "name": "SubReddit",
       "properties": [
         {
@@ -60,6 +60,10 @@
         {
           "id": "4:5364418099469991247",
           "name": "reqUpVotes"
+        },
+        {
+          "id": "5:4504659259412795601",
+          "name": "notiEnabled"
         }
       ],
       "relations": []

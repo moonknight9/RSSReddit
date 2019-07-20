@@ -14,12 +14,19 @@ class SubRedditGroupHolder(subReddit: SubReddit, context: Context)
 
     init {
         onExpand = {
-            // TODO workaround to not mix UI and DB code, is there a better solution?
-            subReddit.save(context)
-            Logger.getGlobal().log(Level.INFO, "${subReddit.name} marked as read")
-
+            markSubAsRead(subReddit, context)
             cancelExpandedSubNotifications(subReddit, context)
         }
+    }
+
+    private fun markSubAsRead(subReddit: SubReddit, context: Context) {
+        // TODO workaround to not mix UI and DB code, is there a better solution?
+        subReddit.save(context)
+        subReddit.posts.forEach {
+            it.isRead = true
+            it.save(context)
+        }
+        Logger.getGlobal().log(Level.INFO, "${subReddit.name} marked as read")
     }
 
     private fun cancelExpandedSubNotifications(subReddit: SubReddit, context: Context) {

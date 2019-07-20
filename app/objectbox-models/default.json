@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:7658662722719873016",
-      "lastPropertyId": "8:2524747200415317485",
+      "lastPropertyId": "9:3474274142230744822",
       "name": "RedditPost",
       "properties": [
         {
@@ -36,6 +36,10 @@
           "id": "8:2524747200415317485",
           "indexId": "2:5102268848488901796",
           "name": "subredditId"
+        },
+        {
+          "id": "9:3474274142230744822",
+          "name": "isRead"
         }
       ],
       "relations": []

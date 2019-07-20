@@ -16,7 +16,10 @@
                 android:name=".MyAlarmReceiver"
                 android:process=":remote">
         </receiver>
-
+        <receiver
+            android:name=".NotificationBroadcastReceiver"
+            android:exported="false">
+        </receiver>
         <service
                 android:name=".NotificationService"
                 android:exported="false"
