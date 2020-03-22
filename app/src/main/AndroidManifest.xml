@@ -17,7 +17,7 @@
                 android:process=":remote">
         </receiver>
         <receiver
-            android:name=".NotificationBroadcastReceiver"
+            android:name=".NotificationTrendingBroadcastReceiver"
             android:exported="false">
         </receiver>
         <service

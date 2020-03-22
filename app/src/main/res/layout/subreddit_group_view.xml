@@ -7,11 +7,23 @@
         android:orientation="horizontal">
     <android.support.v7.widget.AppCompatTextView
             android:id="@+id/sub_reddit_name"
-            android:layout_width="fill_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight=".80"
             android:maxLines="1"
             android:autoSizeTextType="uniform"
             android:autoSizeMinTextSize="12sp"
             android:autoSizeMaxTextSize="100sp"
             android:autoSizeStepGranularity="2sp"/>
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/sub_notification_count"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight=".20"
+        android:maxLines="1"
+        android:textColor="@android:color/holo_red_light"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="12sp"
+        android:autoSizeMaxTextSize="100sp"
+        android:autoSizeStepGranularity="2sp"/>
 </LinearLayout>

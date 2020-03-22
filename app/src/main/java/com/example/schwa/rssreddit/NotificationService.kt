@@ -29,19 +29,19 @@ class NotificationService : JobIntentService() {
                     .setContentText(contentText)
                     .setStyle(NotificationCompat.BigTextStyle().bigText(post.text))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .setContentIntent(getOpenURIPIntent(post.url, context))
+                    .setContentIntent(getOpenURIPIntent(post.permalink, context))
+                    .addAction(R.drawable.ic_notifications_black_24dp, "Source", getOpenURIPIntent(post.url, context))
                     .setDeleteIntent(getMarkPostAsReadPIntent(post.id, context))
+
+            val notification = mBuilder.build()
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel("CHANNELID", "Trending Post", NotificationManager.IMPORTANCE_DEFAULT)
                 notificationManager.createNotificationChannel(channel)
+                // Oreo and above https://stackoverflow.com/questions/14671453/catch-on-swipe-to-dismiss-event
+                notification.flags = notification.flags or Notification.FLAG_AUTO_CANCEL
             }
-
-            val notification = mBuilder.build()
-            // Oreo and above https://stackoverflow.com/questions/14671453/catch-on-swipe-to-dismiss-event
-            notification.flags = notification.flags or Notification.FLAG_AUTO_CANCEL
 
             notificationManager.notify(post.id.hashCode(), notification)
         }
@@ -54,7 +54,7 @@ class NotificationService : JobIntentService() {
         }
 
         private fun getMarkPostAsReadPIntent(id: String?, context: Context): PendingIntent? {
-            val intent = Intent(context, NotificationBroadcastReceiver::class.java).apply {
+            val intent = Intent(context, NotificationTrendingBroadcastReceiver::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             intent.putExtra(POST_ID, id)

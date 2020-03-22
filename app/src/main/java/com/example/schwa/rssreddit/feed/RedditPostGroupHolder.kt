@@ -11,6 +11,7 @@ class RedditPostGroupHolder : Parcelable {
     var url: String? = null
     var permalink: String? = null
     var thumbnail: String? = null
+    var isRead: Boolean = false
 
     constructor(redditPost: RedditPost) {
         title = redditPost.title
@@ -20,6 +21,7 @@ class RedditPostGroupHolder : Parcelable {
         url = redditPost.url
         permalink = redditPost.permalink
         thumbnail = redditPost.thumbnail
+        isRead = redditPost.isRead
     }
 
     constructor(parcel: Parcel) {
@@ -30,6 +32,7 @@ class RedditPostGroupHolder : Parcelable {
         url = parcel.readString()
         permalink = parcel.readString()
         thumbnail = parcel.readString()
+        isRead = parcel.readByte() != 0.toByte()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -40,6 +43,7 @@ class RedditPostGroupHolder : Parcelable {
         parcel.writeString(url)
         parcel.writeString(permalink)
         parcel.writeString(thumbnail)
+        parcel.writeByte((if (isRead) 1 else 0).toByte())
     }
 
     override fun describeContents(): Int {

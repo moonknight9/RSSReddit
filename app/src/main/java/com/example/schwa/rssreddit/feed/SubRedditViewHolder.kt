@@ -10,16 +10,26 @@ import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder
 
 class SubRedditViewHolder(view: View) : GroupViewHolder(view) {
     private var name: TextView = view.findViewById(R.id.sub_reddit_name)
-    private var onExpand : () -> Unit = {}
+    private var notiCount: TextView = view.findViewById(R.id.sub_notification_count)
+    private var onExpand: () -> Unit = {}
 
     fun setSubRedditView(group: ExpandableGroup<Parcelable>) {
         setName(group)
+        setNotificationNumber(group)
         setSubRedditCreationViewClickListener()
         setOnExpandAction(group as SubRedditGroupHolder)
     }
 
     private fun setName(group: ExpandableGroup<Parcelable>) {
         name.text = group.title
+    }
+
+    private fun setNotificationNumber(group: ExpandableGroup<Parcelable>) {
+        notiCount.text = group.items
+                .map { it as RedditPostGroupHolder }
+                .filterNot { it.isRead }
+                .count()
+                .toString()
     }
 
     private fun setSubRedditCreationViewClickListener() {
